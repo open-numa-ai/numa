@@ -19,6 +19,7 @@ The initial release intentionally includes no LLM integration or complex plannin
 - Typed `Agent`, `Tool`, and `Memory` extension points
 - Pydantic-backed tool input/output schemas and runtime validation
 - Entry-point discovery for third-party Agent and Tool plugins
+- SQLite-backed persistent memory for JSON-compatible values
 - Synchronous `AgentRuntime` with explicit task lifecycle handling
 - Framework-neutral `Task`, `Message`, and `Context` models
 - YAML, JSON, environment, and default configuration layers
@@ -70,6 +71,18 @@ Inspect installed plugins:
 ```bash
 uv run numa plugins list
 uv run numa plugins list --type agent
+```
+
+Persist runtime memory locally:
+
+```python
+from numa import AgentRuntime
+from numa.memory import SQLiteMemory
+
+with SQLiteMemory("numa-memory.db") as memory:
+  runtime = AgentRuntime(memory=memory)
+  memory.set("project", {"name": "Numa"})
+  print(runtime.memory.get("project"))
 ```
 
 See the [Quick Start guide](docs/quick-start.md) for configuration and development commands.

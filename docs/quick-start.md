@@ -142,6 +142,22 @@ uv run numa run example_agent --task "Hello from a plugin"
 
 Plugin packages use the `numa.agents` and `numa.tools` Entry Point groups. See the [Plugin guide](plugins.md) for package declarations and factory examples.
 
+## Persist Memory with SQLite
+
+`SQLiteMemory` stores JSON-compatible values in a local database using Python's standard SQLite driver.
+
+```python
+from numa import AgentRuntime
+from numa.memory import SQLiteMemory
+
+with SQLiteMemory("numa-memory.db") as memory:
+  runtime = AgentRuntime(memory=memory)
+  memory.set("preferences", {"language": "en", "topics": ["agents"]})
+  print(runtime.memory.get("preferences"))
+```
+
+The adapter creates its table automatically. Use it as a context manager or call `close()` explicitly. Values must be valid JSON; arbitrary Python objects and non-finite numbers are rejected with `MemoryError`.
+
 ## Quality Checks
 
 ```bash

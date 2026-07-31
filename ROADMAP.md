@@ -19,7 +19,7 @@ Goal: validate contracts through real but optional adapters.
 
 - [x] Tool input and output schemas
 - [x] Plugin discovery through Python entry points
-- [ ] Persistent memory adapter
+- [x] Persistent memory adapter
 - [ ] Optional model provider interfaces
 - [ ] Structured event and tracing hooks
 
