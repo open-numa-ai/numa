@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any
+from collections.abc import Awaitable, Callable
+from typing import Any, TypeVar
 from uuid import uuid4
 
 from pydantic import ValidationError
@@ -11,28 +12,43 @@ from pydantic import ValidationError
 from numa.agents import AsyncAgent
 from numa.core import (
     AgentExecutionError,
+    AgentTimeoutError,
     Context,
     Message,
     Task,
     TaskStatus,
     ToolExecutionError,
     ToolNotFoundError,
+    ToolTimeoutError,
     ToolValidationError,
 )
 from numa.events import Event, EventBus, EventType
 from numa.memory import InMemoryMemory, Memory
+from numa.runtime.policies import ResiliencePolicy
 from numa.tools import AsyncTool
 from numa.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
+ResultT = TypeVar("ResultT")
+
+
+class _ExecutionTimeoutError(Exception):
+    """Signal that the Runtime policy deadline expired."""
+
 
 class AsyncAgentRuntime:
     """Coordinate asynchronous Agents, Tools, memory, and lifecycle events."""
 
-    def __init__(self, memory: Memory | None = None, event_bus: EventBus | None = None) -> None:
+    def __init__(
+        self,
+        memory: Memory | None = None,
+        event_bus: EventBus | None = None,
+        resilience_policy: ResiliencePolicy | None = None,
+    ) -> None:
         self.memory = memory or InMemoryMemory()
         self.event_bus = event_bus or EventBus()
+        self.resilience_policy = resilience_policy or ResiliencePolicy()
         self._tools: dict[str, AsyncTool] = {}
 
     def register_tool(self, tool: AsyncTool) -> None:
@@ -44,7 +60,20 @@ class AsyncAgentRuntime:
         return self._tools.get(name)
 
     async def execute_tool(self, name: str, **arguments: Any) -> Any:
-        """Validate and execute a registered asynchronous Tool."""
+        """Validate and execute a Tool with the Runtime's default policy."""
+        return await self.execute_tool_with_policy(
+            name,
+            self.resilience_policy,
+            **arguments,
+        )
+
+    async def execute_tool_with_policy(
+        self,
+        name: str,
+        resilience_policy: ResiliencePolicy,
+        **arguments: Any,
+    ) -> Any:
+        """Validate and execute a Tool with a per-call resilience policy."""
         execution_id = str(uuid4())
         self.event_bus.emit(
             Event(
@@ -65,7 +94,25 @@ class AsyncAgentRuntime:
 
             logger.info("Async Tool execution started", extra={"tool": name})
             try:
-                result = await tool.execute(**validated_input.model_dump())
+                result = await self._execute_with_policy(
+                    lambda: tool.execute(**validated_input.model_dump()),
+                    resilience_policy,
+                    component_name=name,
+                )
+            except asyncio.CancelledError:
+                logger.info("Async Tool execution cancelled", extra={"tool": name})
+                self.event_bus.emit(
+                    Event(
+                        type=EventType.TOOL_CANCELLED,
+                        execution_id=execution_id,
+                        component_name=name,
+                    )
+                )
+                raise
+            except _ExecutionTimeoutError as exc:
+                timeout_error = ToolTimeoutError(f"Tool {name!r} execution timed out")
+                logger.warning("Async Tool execution timed out", extra={"tool": name})
+                raise timeout_error from exc
             except Exception as exc:
                 logger.exception("Async Tool execution failed", extra={"tool": name})
                 raise ToolExecutionError(f"Tool {name!r} execution failed") from exc
@@ -102,6 +149,7 @@ class AsyncAgentRuntime:
         agent: AsyncAgent,
         task: Task,
         context: Context | None = None,
+        resilience_policy: ResiliencePolicy | None = None,
     ) -> Message:
         """Run one asynchronous Agent task and update its lifecycle state."""
         execution_context = context or Context()
@@ -116,7 +164,43 @@ class AsyncAgentRuntime:
         logger.info("Async Agent task started", extra={"agent": agent.name, "task_id": task.id})
 
         try:
-            result = await agent.run(task, execution_context)
+            result = await self._execute_with_policy(
+                lambda: agent.run(task, execution_context),
+                resilience_policy or self.resilience_policy,
+                component_name=agent.name,
+            )
+        except asyncio.CancelledError:
+            task.status = TaskStatus.CANCELLED
+            task.error = "Agent execution cancelled"
+            logger.info(
+                "Async Agent task cancelled",
+                extra={"agent": agent.name, "task_id": task.id},
+            )
+            self.event_bus.emit(
+                Event(
+                    type=EventType.AGENT_CANCELLED,
+                    execution_id=task.id,
+                    component_name=agent.name,
+                )
+            )
+            raise
+        except _ExecutionTimeoutError as exc:
+            timeout_error = AgentTimeoutError(f"Agent {agent.name!r} timed out task {task.id}")
+            task.status = TaskStatus.FAILED
+            task.error = str(timeout_error)
+            logger.warning(
+                "Async Agent task timed out",
+                extra={"agent": agent.name, "task_id": task.id},
+            )
+            self.event_bus.emit(
+                Event(
+                    type=EventType.AGENT_FAILED,
+                    execution_id=task.id,
+                    component_name=agent.name,
+                    metadata={"error_type": type(timeout_error).__name__},
+                )
+            )
+            raise timeout_error from exc
         except Exception as exc:
             task.status = TaskStatus.FAILED
             task.error = str(exc)
@@ -150,6 +234,51 @@ class AsyncAgentRuntime:
         )
         return result
 
-    async def gather(self, *runs: tuple[AsyncAgent, Task]) -> list[Message]:
+    async def gather(
+        self,
+        *runs: tuple[AsyncAgent, Task],
+        resilience_policy: ResiliencePolicy | None = None,
+    ) -> list[Message]:
         """Run multiple Agent tasks concurrently and preserve input order."""
-        return list(await asyncio.gather(*(self.run(agent, task) for agent, task in runs)))
+        return list(
+            await asyncio.gather(
+                *(
+                    self.run(agent, task, resilience_policy=resilience_policy)
+                    for agent, task in runs
+                )
+            )
+        )
+
+    async def _execute_with_policy(
+        self,
+        operation: Callable[[], Awaitable[ResultT]],
+        policy: ResiliencePolicy,
+        *,
+        component_name: str,
+    ) -> ResultT:
+        timeout = asyncio.timeout(policy.timeout_seconds)
+        try:
+            async with timeout:
+                attempt = 1
+                while True:
+                    try:
+                        return await operation()
+                    except Exception as exc:
+                        if not policy.retry.should_retry(exc, attempt):
+                            raise
+                        attempt += 1
+                        delay = policy.retry.delay_before_attempt(attempt)
+                        logger.warning(
+                            "Async execution retry scheduled",
+                            extra={
+                                "component": component_name,
+                                "attempt": attempt,
+                                "delay_seconds": delay,
+                                "error_type": type(exc).__name__,
+                            },
+                        )
+                        await asyncio.sleep(delay)
+        except TimeoutError as exc:
+            if timeout.expired():
+                raise _ExecutionTimeoutError from exc
+            raise

@@ -9,7 +9,8 @@ Numa establishes small interfaces, optional integration boundaries, and parallel
 3. **Keep orchestration thin.** `AgentRuntime` controls task lifecycle and dependency access, but does not implement agent strategy.
 4. **Depend on abstractions.** Runtime and application code can replace memory and tool adapters without changing agents.
 5. **Keep sync and async explicit.** `AgentRuntime` and `AsyncAgentRuntime` accept their corresponding component contracts without implicit thread offloading or event-loop management.
-6. **Use focused dependencies.** Logging and CLI behavior build on `logging` and `argparse`; PyYAML handles configuration files and Pydantic defines tool boundaries.
+6. **Make resilience policy explicit.** Async timeout and retry behavior is immutable, bounded, and opt-in; cancellation always remains visible to callers.
+7. **Use focused dependencies.** Logging and CLI behavior build on `logging` and `argparse`; PyYAML handles configuration files and Pydantic defines tool boundaries.
 
 ## Repository Tree
 
@@ -29,12 +30,14 @@ numa/
 │   ├── model-providers.md
 │   ├── plugins.md
 │   ├── quick-start.md
+│   ├── runtime-policies.md
 │   └── vision.md
 ├── examples/
 │   ├── async_runtime.py
 │   ├── basic_agent.py
 │   ├── basic_tool.py
 │   ├── model_provider.py
+│   ├── runtime_resilience.py
 │   ├── structured_events.py
 │   └── sqlite_memory.py
 ├── src/
@@ -66,6 +69,7 @@ numa/
 │       │   └── exceptions.py
 │       ├── runtime/
 │       │   ├── async_runtime.py
+│       │   ├── policies.py
 │       │   └── runtime.py
 │       ├── tools/
 │       │   ├── arithmetic.py
@@ -102,11 +106,13 @@ Defines parallel `Agent` and `AsyncAgent` abstractions. An Agent owns task-speci
 
 ### `events`
 
-Defines structured Agent, Tool, and Provider lifecycle events. `EventBus` dispatches synchronously to registered handlers and isolates handler failures from framework execution. Built-in producers emit correlation IDs, component names, UTC timestamps, transition types, and minimal metadata without including prompts, arguments, or results.
+Defines structured Agent, Tool, and Provider lifecycle events, including explicit async cancellation transitions. `EventBus` dispatches synchronously to registered handlers and isolates handler failures from framework execution. Built-in producers emit correlation IDs, component names, UTC timestamps, transition types, and minimal metadata without including prompts, arguments, or results.
 
 ### `runtime`
 
-Coordinates Agent and Tool invocations. `AgentRuntime` executes synchronous components; `AsyncAgentRuntime` awaits asynchronous components and can gather independent Agent runs concurrently. Both change task state, record results, validate Tool boundaries, emit structured events, log lifecycle transitions, and convert implementation failures into framework exceptions.
+Coordinates Agent and Tool invocations. `AgentRuntime` executes synchronous components; `AsyncAgentRuntime` awaits asynchronous components, can gather independent Agent runs concurrently, and applies immutable timeout and retry policies. Both change task state, record results, validate Tool boundaries, emit structured events, log lifecycle transitions, and convert implementation failures into framework exceptions.
+
+Async policy timeouts cover all attempts and backoff delays. External cancellation is never retried or wrapped. Schema validation and Tool lookup remain outside the retry boundary.
 
 ### `tools`
 
@@ -187,7 +193,7 @@ Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidation
 - **Model integration:** implement `ModelProvider` adapters in optional packages and inject them into application Agents.
 - **Persistent memory:** add specialized PostgreSQL, Redis, or vector retrieval contracts without expanding the minimal key-value interface prematurely.
 - **Tool ecosystem:** implement `Tool` adapters and add permission, isolation, retry, and telemetry policy around registration.
-- **Async policies:** add cancellation, timeout, and retry behavior without changing synchronous APIs or hiding blocking work in the event loop.
+- **Runtime policies:** add middleware composition and specialized policies without changing synchronous APIs or hiding blocking work in the event loop.
 - **Planning:** compose tasks above `AgentRuntime`; do not embed planning policy into the base runtime.
 - **Multi-agent collaboration:** add routing and message transport as a higher orchestration layer.
 - **Observability:** attach logging handlers or implement `EventHandler` adapters for metrics, tracing, audit, and OpenTelemetry backends.
@@ -195,4 +201,4 @@ Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidation
 
 ## Current Boundaries
 
-The foundation does not include vendor LLM adapters, prompt templates, autonomous loops, network services, distributed execution, or multi-agent coordination. Async cancellation, timeout, and retry policies are also intentionally deferred.
+The foundation does not include vendor LLM adapters, prompt templates, autonomous loops, network services, distributed execution, or multi-agent coordination. Synchronous Runtime resilience and side-effect compensation are intentionally deferred.

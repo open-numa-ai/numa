@@ -28,7 +28,7 @@ Goal: validate contracts through real but optional adapters.
 Goal: support larger and concurrent workloads without changing core semantics.
 
 - [x] Async agent and tool contracts
-- [ ] Cancellation, timeout, and retry policies
+- [x] Cancellation, timeout, and retry policies
 - [ ] Task persistence and resumability
 - [ ] Runtime middleware
 - [ ] Security and tool permission policies

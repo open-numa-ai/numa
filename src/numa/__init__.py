@@ -12,7 +12,7 @@ from numa.events import (
 )
 from numa.memory import Memory
 from numa.providers import ModelProvider, ModelRequest, ModelResponse, ModelUsage
-from numa.runtime import AgentRuntime, AsyncAgentRuntime
+from numa.runtime import AgentRuntime, AsyncAgentRuntime, ResiliencePolicy, RetryPolicy
 from numa.tools import AsyncAddTool, AsyncTool, Tool
 
 __all__ = [
@@ -37,6 +37,8 @@ __all__ = [
     "ModelResponse",
     "ModelUsage",
     "NoOpEventHandler",
+    "ResiliencePolicy",
+    "RetryPolicy",
     "Task",
     "TaskStatus",
     "Tool",

@@ -13,8 +13,16 @@ class AgentExecutionError(NumaError):
     """Raised when an agent cannot complete a task."""
 
 
+class AgentTimeoutError(AgentExecutionError):
+    """Raised when an Agent exceeds its configured execution timeout."""
+
+
 class ToolExecutionError(NumaError):
     """Raised when a tool invocation fails."""
+
+
+class ToolTimeoutError(ToolExecutionError):
+    """Raised when a Tool exceeds its configured execution timeout."""
 
 
 class ToolNotFoundError(NumaError):
