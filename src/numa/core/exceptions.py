@@ -17,5 +17,13 @@ class ToolExecutionError(NumaError):
     """Raised when a tool invocation fails."""
 
 
+class ToolNotFoundError(NumaError):
+    """Raised when a requested tool is not registered."""
+
+
+class ToolValidationError(NumaError):
+    """Raised when tool input or output violates its declared schema."""
+
+
 class MemoryError(NumaError):
     """Raised when a memory operation fails."""

@@ -77,6 +77,53 @@ result = AgentRuntime().run(GreetingAgent(), Task(description="Say hello"))
 print(result.content)
 ```
 
+## Define and Run a Tool
+
+Tool input models inherit from `ToolInput`, which rejects undeclared arguments and exposes a standard JSON Schema. Output validation is optional.
+
+```python
+from typing import Any
+
+from pydantic import BaseModel
+
+from numa import AgentRuntime
+from numa.tools import Tool, ToolInput
+
+
+class MultiplyInput(ToolInput):
+  left: int
+  right: int
+
+
+class MultiplyOutput(BaseModel):
+  result: int
+
+
+class MultiplyTool(Tool):
+  @property
+  def name(self) -> str:
+    return "multiply"
+
+  @property
+  def input_model(self) -> type[BaseModel]:
+    return MultiplyInput
+
+  @property
+  def output_model(self) -> type[BaseModel]:
+    return MultiplyOutput
+
+  def execute(self, **arguments: Any) -> dict[str, int]:
+    return {"result": arguments["left"] * arguments["right"]}
+
+
+runtime = AgentRuntime()
+runtime.register_tool(MultiplyTool())
+result = runtime.execute_tool("multiply", left=6, right=7)
+print(result)
+```
+
+Use `tool.input_schema` and `tool.output_schema` when another system needs JSON Schema. Calls through `AgentRuntime.execute_tool()` validate both boundaries. Direct `Tool.execute()` calls intentionally bypass framework validation.
+
 ## Quality Checks
 
 ```bash

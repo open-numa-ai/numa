@@ -1,7 +1,20 @@
 """Synchronous agent runtime for task orchestration."""
 
+from typing import Any
+
+from pydantic import ValidationError
+
 from numa.agents import Agent
-from numa.core import AgentExecutionError, Context, Message, Task, TaskStatus
+from numa.core import (
+    AgentExecutionError,
+    Context,
+    Message,
+    Task,
+    TaskStatus,
+    ToolExecutionError,
+    ToolNotFoundError,
+    ToolValidationError,
+)
 from numa.memory import InMemoryMemory, Memory
 from numa.tools import Tool
 from numa.utils.logging import get_logger
@@ -23,6 +36,34 @@ class AgentRuntime:
     def get_tool(self, name: str) -> Tool | None:
         """Return a registered tool by name."""
         return self._tools.get(name)
+
+    def execute_tool(self, name: str, **arguments: Any) -> Any:
+        """Validate and execute a registered tool by name."""
+        tool = self.get_tool(name)
+        if tool is None:
+            raise ToolNotFoundError(f"Tool {name!r} is not registered")
+
+        try:
+            validated_input = tool.input_model.model_validate(arguments)
+        except ValidationError as exc:
+            raise ToolValidationError(f"Invalid input for tool {name!r}") from exc
+
+        logger.info("Tool execution started", extra={"tool": name})
+        try:
+            result = tool.execute(**validated_input.model_dump())
+        except Exception as exc:
+            logger.exception("Tool execution failed", extra={"tool": name})
+            raise ToolExecutionError(f"Tool {name!r} execution failed") from exc
+
+        output_model = tool.output_model
+        if output_model is not None:
+            try:
+                result = output_model.model_validate(result).model_dump()
+            except ValidationError as exc:
+                raise ToolValidationError(f"Invalid output from tool {name!r}") from exc
+
+        logger.info("Tool execution completed", extra={"tool": name})
+        return result
 
     def run(self, agent: Agent, task: Task, context: Context | None = None) -> Message:
         """Run one agent task and update its lifecycle state."""

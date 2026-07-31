@@ -9,7 +9,7 @@ Numa v0.1.0 establishes small interfaces and a synchronous execution path. It de
 3. **Keep orchestration thin.** `AgentRuntime` controls task lifecycle and dependency access, but does not implement agent strategy.
 4. **Depend on abstractions.** Runtime and application code can replace memory and tool adapters without changing agents.
 5. **Start synchronously.** A clear synchronous contract is easier to test. Async execution can be introduced as a parallel runtime contract when needed.
-6. **Use standard library infrastructure where practical.** Logging and CLI behavior build on `logging` and `argparse`; PyYAML is the only runtime dependency.
+6. **Use focused dependencies.** Logging and CLI behavior build on `logging` and `argparse`; PyYAML handles configuration files and Pydantic defines tool boundaries.
 
 ## Repository Tree
 
@@ -28,7 +28,8 @@ numa/
 │   ├── quick-start.md
 │   └── vision.md
 ├── examples/
-│   └── basic_agent.py
+│   ├── basic_agent.py
+│   └── basic_tool.py
 ├── src/
 │   └── numa/
 │       ├── agents/
@@ -45,6 +46,7 @@ numa/
 │       ├── runtime/
 │       │   └── runtime.py
 │       ├── tools/
+│       │   ├── arithmetic.py
 │       │   └── base.py
 │       ├── utils/
 │       │   └── logging.py
@@ -76,11 +78,13 @@ Defines the `Agent` abstraction. An agent owns task-specific behavior and return
 
 ### `runtime`
 
-Coordinates an agent invocation. It changes task state, records results, appends output to context, exposes memory and registered tools, logs lifecycle events, and converts implementation failures into `AgentExecutionError`.
+Coordinates agent and tool invocations. It changes task state, records agent results, validates registered tool boundaries, logs lifecycle events, and converts implementation failures into framework exceptions.
 
 ### `tools`
 
-Defines named executable capabilities. Tool schemas, validation, permissions, and provider adapters remain extension concerns for later releases.
+Defines named executable capabilities. Each tool exposes a Pydantic input model, an optional output model, and generated JSON Schemas. `AgentRuntime.execute_tool()` validates and normalizes input before execution and validates declared output afterward.
+
+`ToolInput` rejects undeclared arguments by default. Direct calls to `Tool.execute()` remain available for low-level use, but bypass runtime lookup, validation, logging, and exception conversion.
 
 ### `memory`
 
@@ -118,11 +122,29 @@ sequenceDiagram
 
 If an agent raises, the runtime marks the task failed, records the original error text, logs the exception, and raises `AgentExecutionError` with the original exception as its cause.
 
+## Tool Execution Flow
+
+```mermaid
+sequenceDiagram
+  participant App as Agent or Application
+  participant Runtime as AgentRuntime
+  participant Tool
+
+  App->>Runtime: execute_tool(name, arguments)
+  Runtime->>Runtime: resolve and validate input
+  Runtime->>Tool: execute(normalized arguments)
+  Tool-->>Runtime: result
+  Runtime->>Runtime: validate optional output
+  Runtime-->>App: normalized result
+```
+
+Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidationError`, and implementation failures raise `ToolExecutionError`. Wrapped failures retain their original exception as `__cause__`.
+
 ## Extension Points
 
 - **Model integration:** implement an `Agent` that depends on a provider-specific client owned by the application.
 - **Persistent memory:** implement `Memory` using SQLite, PostgreSQL, Redis, or a vector store.
-- **Tool ecosystem:** implement `Tool` adapters and add schema validation and permission policy around registration.
+- **Tool ecosystem:** implement `Tool` adapters and add permission, isolation, retry, and telemetry policy around registration.
 - **Async runtime:** add an async agent contract and runtime without changing the synchronous API.
 - **Planning:** compose tasks above `AgentRuntime`; do not embed planning policy into the base runtime.
 - **Multi-agent collaboration:** add routing and message transport as a higher orchestration layer.
@@ -131,4 +153,4 @@ If an agent raises, the runtime marks the task failed, records the original erro
 
 ## Current Boundaries
 
-The foundation does not include LLM calls, prompt templates, autonomous loops, tool argument schemas, persistent storage, networking, distributed execution, or multi-agent coordination. These omissions are intentional for v0.1.0.
+The foundation does not include LLM calls, prompt templates, autonomous loops, persistent storage, networking, distributed execution, or multi-agent coordination. These omissions are intentional while v0.2 integration boundaries are developed incrementally.

@@ -6,6 +6,8 @@ from numa.core.exceptions import (
     MemoryError,
     NumaError,
     ToolExecutionError,
+    ToolNotFoundError,
+    ToolValidationError,
 )
 from numa.core.models import Context, Message, MessageRole, Task, TaskStatus
 
@@ -20,4 +22,6 @@ __all__ = [
     "Task",
     "TaskStatus",
     "ToolExecutionError",
+    "ToolNotFoundError",
+    "ToolValidationError",
 ]

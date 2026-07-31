@@ -3,6 +3,18 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
+from pydantic import BaseModel, ConfigDict
+
+
+class ToolInput(BaseModel):
+    """Base model that rejects undeclared tool arguments."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class EmptyToolInput(ToolInput):
+    """Input model for tools that accept no arguments."""
+
 
 class Tool(ABC):
     """A capability that can be registered with an agent runtime."""
@@ -16,6 +28,28 @@ class Tool(ABC):
     def description(self) -> str:
         """Return a human-readable description of the tool."""
         return ""
+
+    @property
+    def input_model(self) -> type[BaseModel]:
+        """Return the Pydantic model used to validate tool arguments."""
+        return EmptyToolInput
+
+    @property
+    def output_model(self) -> type[BaseModel] | None:
+        """Return the optional Pydantic model used to validate tool output."""
+        return None
+
+    @property
+    def input_schema(self) -> dict[str, Any]:
+        """Return the tool input contract as JSON Schema."""
+        return self.input_model.model_json_schema()
+
+    @property
+    def output_schema(self) -> dict[str, Any] | None:
+        """Return the tool output contract as JSON Schema when declared."""
+        if self.output_model is None:
+            return None
+        return self.output_model.model_json_schema()
 
     @abstractmethod
     def execute(self, **arguments: Any) -> Any:

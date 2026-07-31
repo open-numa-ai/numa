@@ -17,7 +17,7 @@ Goal: establish a small, typed, testable framework core.
 
 Goal: validate contracts through real but optional adapters.
 
-- [ ] Tool input and output schemas
+- [x] Tool input and output schemas
 - [ ] Plugin discovery through Python entry points
 - [ ] Persistent memory adapter
 - [ ] Optional model provider interfaces

@@ -17,6 +17,7 @@ The initial release intentionally includes no LLM integration or complex plannin
 ## Features
 
 - Typed `Agent`, `Tool`, and `Memory` extension points
+- Pydantic-backed tool input/output schemas and runtime validation
 - Synchronous `AgentRuntime` with explicit task lifecycle handling
 - Framework-neutral `Task`, `Message`, and `Context` models
 - YAML, JSON, environment, and default configuration layers
@@ -49,6 +50,18 @@ from numa.agents import EchoAgent
 
 result = AgentRuntime().run(EchoAgent(), Task(description="Hello, Numa"))
 print(result.content)
+```
+
+Register and execute a schema-backed tool:
+
+```python
+from numa import AgentRuntime
+from numa.tools import AddTool
+
+runtime = AgentRuntime()
+runtime.register_tool(AddTool())
+
+print(runtime.execute_tool("add", left=2, right=3))
 ```
 
 See the [Quick Start guide](docs/quick-start.md) for configuration and development commands.
