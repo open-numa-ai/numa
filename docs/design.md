@@ -14,15 +14,15 @@ Numa's API design favors explicit data flow, narrow interfaces, and replaceable 
 
 ### Agent
 
-Receives a `Task` and `Context`, then returns a `Message`. Provider clients and prompting policy belong to concrete agents.
+Receives a `Task` and `Context`, then returns a `Message`. `Agent` and `AsyncAgent` make execution mode explicit. Provider clients and prompting policy belong to concrete Agents.
 
 ### Runtime
 
-Owns execution lifecycle, dependency access, logging, and error conversion. The initial runtime is intentionally synchronous.
+Owns execution lifecycle, dependency access, logging, and error conversion. `AgentRuntime` executes synchronous contracts; `AsyncAgentRuntime` awaits asynchronous contracts and supports concurrent independent runs. Neither runtime implicitly converts between execution modes.
 
 ### Tool
 
-Exposes a named capability with Pydantic input and optional output schemas. Future layers can add authorization, isolation, retries, and telemetry without expanding the base contract prematurely.
+Exposes a named synchronous or asynchronous capability with shared Pydantic input and optional output schemas. Future layers can add authorization, isolation, retries, and telemetry without expanding the base contract prematurely.
 
 ### Memory
 
@@ -50,5 +50,6 @@ During the v0.x series, APIs may evolve as integrations reveal missing requireme
 - Prompt or planning frameworks
 - Autonomous execution loops
 - Vector memory and retrieval
-- Distributed and asynchronous execution
+- Distributed execution
+- Async cancellation, timeout, and retry policies
 - Multi-agent routing

@@ -6,7 +6,7 @@
 
 Numa is a modular Python framework for building intelligent agent systems. It provides small, explicit abstractions for agents, task execution, tools, memory, context, configuration, and future multi-agent coordination.
 
-> **Project status:** v0.2 integration boundaries are feature-complete. The public APIs may evolve before the first stable release.
+> **Project status:** v0.2 integration boundaries are feature-complete and v0.3 runtime evolution is in progress. The public APIs may evolve before the first stable release.
 
 ## Why Numa?
 
@@ -23,6 +23,7 @@ The initial release intentionally includes no LLM integration or complex plannin
 - Provider-neutral model request and response interfaces
 - Structured Agent, Tool, and Provider lifecycle events
 - Synchronous `AgentRuntime` with explicit task lifecycle handling
+- Parallel `AsyncAgent`, `AsyncTool`, and `AsyncAgentRuntime` contracts
 - Framework-neutral `Task`, `Message`, and `Context` models
 - YAML, JSON, environment, and default configuration layers
 - Standard-library logging with a unified Numa namespace
@@ -111,6 +112,26 @@ runtime = AgentRuntime(event_bus=EventBus([collector]))
 runtime.run(EchoAgent(), Task(description="Hello"))
 
 print([event.type.value for event in collector.events])
+```
+
+Run independent Agent tasks concurrently:
+
+```python
+import asyncio
+
+from numa import AsyncAgentRuntime, Task
+from numa.agents import AsyncEchoAgent
+
+
+async def main() -> None:
+    results = await AsyncAgentRuntime().gather(
+        (AsyncEchoAgent(), Task(description="first")),
+        (AsyncEchoAgent(), Task(description="second")),
+    )
+    print([result.content for result in results])
+
+
+asyncio.run(main())
 ```
 
 See the [Quick Start guide](docs/quick-start.md) for configuration and development commands.
