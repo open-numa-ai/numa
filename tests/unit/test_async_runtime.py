@@ -13,8 +13,8 @@ from numa.core import (
     MessageRole,
     Task,
     TaskStatus,
-    ToolValidationError,
     ToolTimeoutError,
+    ToolValidationError,
 )
 from numa.events import EventBus, EventType, InMemoryEventHandler
 from numa.runtime import AsyncAgentRuntime, ResiliencePolicy, RetryPolicy
