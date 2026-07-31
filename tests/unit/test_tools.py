@@ -31,7 +31,7 @@ class InvalidOutputTool(NoArgumentsTool):
     def output_model(self) -> type[BaseModel]:
         return InvalidOutput
 
-    def execute(self, **arguments: Any) -> dict[str, str]:
+    def execute(self, **arguments: Any) -> Any:
         del arguments
         return {"count": "not-an-integer"}
 

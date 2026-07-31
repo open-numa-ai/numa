@@ -2,5 +2,6 @@
 
 from numa.memory.base import Memory
 from numa.memory.in_memory import InMemoryMemory
+from numa.memory.sqlite import SQLiteMemory
 
-__all__ = ["InMemoryMemory", "Memory"]
+__all__ = ["InMemoryMemory", "Memory", "SQLiteMemory"]

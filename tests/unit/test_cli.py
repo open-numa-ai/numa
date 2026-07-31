@@ -56,7 +56,7 @@ def test_run_discovered_agent(
     plugin = Plugin(
         name="example_agent",
         group=AGENT_PLUGIN_GROUP,
-        component_type=Agent,
+        component_type=Agent,  # type: ignore[type-abstract]
         _load_factory=lambda: EchoAgent,
     )
     monkeypatch.setattr("numa.cli.discover_agents", lambda: {"example_agent": plugin})
@@ -75,7 +75,7 @@ def test_listing_does_not_load_plugin(
     plugin = Plugin(
         name="broken",
         group=AGENT_PLUGIN_GROUP,
-        component_type=Agent,
+        component_type=Agent,  # type: ignore[type-abstract]
         _load_factory=failed_loader,
     )
     monkeypatch.setattr("numa.cli.discover_agents", lambda: {"broken": plugin})

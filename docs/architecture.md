@@ -30,7 +30,8 @@ numa/
 │   └── vision.md
 ├── examples/
 │   ├── basic_agent.py
-│   └── basic_tool.py
+│   ├── basic_tool.py
+│   └── sqlite_memory.py
 ├── src/
 │   └── numa/
 │       ├── agents/
@@ -43,7 +44,8 @@ numa/
 │       │   └── models.py
 │       ├── memory/
 │       │   ├── base.py
-│       │   └── in_memory.py
+│       │   ├── in_memory.py
+│       │   └── sqlite.py
 │       ├── plugins/
 │       │   ├── discovery.py
 │       │   └── exceptions.py
@@ -92,7 +94,9 @@ Defines named executable capabilities. Each tool exposes a Pydantic input model,
 
 ### `memory`
 
-Defines minimal key-value memory operations. `InMemoryMemory` supports examples and tests; persistent adapters can implement the same contract.
+Defines minimal key-value memory operations. `InMemoryMemory` supports ephemeral execution and tests. `SQLiteMemory` persists JSON-compatible values behind the same contract, converts storage and serialization failures into `MemoryError`, and serializes access to its connection for thread-safe use within a process.
+
+The SQLite adapter owns one connection for its lifetime so `:memory:` databases and transaction behavior remain predictable. Applications should use its context manager or call `close()` when the runtime no longer needs it.
 
 ### `plugins`
 
@@ -153,7 +157,7 @@ Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidation
 ## Extension Points
 
 - **Model integration:** implement an `Agent` that depends on a provider-specific client owned by the application.
-- **Persistent memory:** implement `Memory` using SQLite, PostgreSQL, Redis, or a vector store.
+- **Persistent memory:** add specialized PostgreSQL, Redis, or vector retrieval contracts without expanding the minimal key-value interface prematurely.
 - **Tool ecosystem:** implement `Tool` adapters and add permission, isolation, retry, and telemetry policy around registration.
 - **Async runtime:** add an async agent contract and runtime without changing the synchronous API.
 - **Planning:** compose tasks above `AgentRuntime`; do not embed planning policy into the base runtime.
