@@ -53,12 +53,12 @@ class Plugin(Generic[PluginComponent]):
 
 def discover_agents() -> dict[str, Plugin[Agent]]:
     """Discover built-in and installed Agent plugins."""
-    return _discover(AGENT_PLUGIN_GROUP, Agent, {"example_agent": EchoAgent})
+    return _discover(AGENT_PLUGIN_GROUP, Agent, {"example_agent": EchoAgent})  # type: ignore[type-abstract]
 
 
 def discover_tools() -> dict[str, Plugin[Tool]]:
     """Discover built-in and installed Tool plugins."""
-    return _discover(TOOL_PLUGIN_GROUP, Tool, {"add": AddTool})
+    return _discover(TOOL_PLUGIN_GROUP, Tool, {"add": AddTool})  # type: ignore[type-abstract]
 
 
 def _discover(
@@ -66,12 +66,18 @@ def _discover(
     component_type: type[PluginComponent],
     builtins: Mapping[str, Callable[[], PluginComponent]],
 ) -> dict[str, Plugin[PluginComponent]]:
+    def _builtin_loader(f: Callable[[], PluginComponent]) -> Callable[[], object]:
+        def _loader() -> object:
+            return f
+
+        return _loader
+
     plugins = {
         name: Plugin(
             name=name,
             group=group,
             component_type=component_type,
-            _load_factory=lambda factory=factory: factory,
+            _load_factory=_builtin_loader(factory),
         )
         for name, factory in builtins.items()
     }

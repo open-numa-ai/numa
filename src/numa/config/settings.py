@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, cast
+from typing import Any, cast
 
 import yaml
 

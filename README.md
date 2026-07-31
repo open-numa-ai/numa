@@ -80,9 +80,9 @@ from numa import AgentRuntime
 from numa.memory import SQLiteMemory
 
 with SQLiteMemory("numa-memory.db") as memory:
-  runtime = AgentRuntime(memory=memory)
-  memory.set("project", {"name": "Numa"})
-  print(runtime.memory.get("project"))
+    runtime = AgentRuntime(memory=memory)
+    memory.set("project", {"name": "Numa"})
+    print(runtime.memory.get("project"))
 ```
 
 See the [Quick Start guide](docs/quick-start.md) for configuration and development commands.
