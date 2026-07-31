@@ -25,6 +25,7 @@ The initial release intentionally includes no LLM integration or complex plannin
 - Synchronous `AgentRuntime` with explicit task lifecycle handling
 - Parallel `AsyncAgent`, `AsyncTool`, and `AsyncAgentRuntime` contracts
 - Explicit async timeout, cancellation, and bounded retry policies
+- Versioned Task snapshots with SQLite persistence and explicit resume
 - Framework-neutral `Task`, `Message`, and `Context` models
 - YAML, JSON, environment, and default configuration layers
 - Standard-library logging with a unified Numa namespace
@@ -142,11 +143,13 @@ See the [Quick Start guide](docs/quick-start.md) for configuration and developme
 ```text
 Application
     |
-AgentRuntime ---- Tool registry
-    |                 |
-  Agent             Tools
+Runtime ---- Tool registry
+    |             |
+Agent         Tools
     |
 Task + Context ---- Memory
+    |
+Task Store (optional)
 ```
 
 Numa depends on abstractions at its boundaries. Agents own task behavior, the runtime owns execution lifecycle, tools expose capabilities, and memory adapters own persistence.
@@ -156,6 +159,7 @@ See [Plugins](docs/plugins.md) to publish Agent and Tool extensions as separate 
 See [Model Providers](docs/model-providers.md) to implement optional vendor adapters.
 See [Structured Events](docs/events.md) to integrate observability handlers.
 See [Runtime Resilience Policies](docs/runtime-policies.md) to configure async deadlines and retries.
+See [Task Persistence and Resume](docs/task-persistence.md) for durable lifecycle recovery.
 
 ## Development
 

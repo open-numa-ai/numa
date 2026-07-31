@@ -169,6 +169,26 @@ runtime = AsyncAgentRuntime(
 
 External cancellation remains cooperative and propagates `asyncio.CancelledError`. See [Runtime Resilience Policies](runtime-policies.md) for deadline, retry, Tool override, and event semantics.
 
+## Persist and Resume Tasks
+
+Configure a `TaskStore` to save Agent lifecycle snapshots and recover unfinished Tasks after recreating the Runtime:
+
+```python
+from numa import AgentRuntime, Task
+from numa.agents import EchoAgent
+from numa.tasks import SQLiteTaskStore
+
+with SQLiteTaskStore("numa-tasks.db") as store:
+    runtime = AgentRuntime(task_store=store)
+    task = Task(description="durable work")
+    runtime.run(EchoAgent(), task)
+
+with SQLiteTaskStore("numa-tasks.db") as store:
+    result = AgentRuntime(task_store=store).resume(EchoAgent(), task.id)
+```
+
+Completed Tasks return their stored result without another Agent call. Unfinished, failed, or cancelled Tasks replay the Agent invocation from the beginning with the same ID and Context. See [Task Persistence and Resume](task-persistence.md) for storage, identity, and idempotency semantics.
+
 ## Inspect Installed Plugins
 
 Numa discovers built-in and third-party components through Python Entry Points.

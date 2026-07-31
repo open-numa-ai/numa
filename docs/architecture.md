@@ -10,7 +10,8 @@ Numa establishes small interfaces, optional integration boundaries, and parallel
 4. **Depend on abstractions.** Runtime and application code can replace memory and tool adapters without changing agents.
 5. **Keep sync and async explicit.** `AgentRuntime` and `AsyncAgentRuntime` accept their corresponding component contracts without implicit thread offloading or event-loop management.
 6. **Make resilience policy explicit.** Async timeout and retry behavior is immutable, bounded, and opt-in; cancellation always remains visible to callers.
-7. **Use focused dependencies.** Logging and CLI behavior build on `logging` and `argparse`; PyYAML handles configuration files and Pydantic defines tool boundaries.
+7. **Persist snapshots, not execution stacks.** Task Stores capture versioned Task and Context state; resume replays unfinished Agent calls with stable identities.
+8. **Use focused dependencies.** Logging and CLI behavior build on `logging` and `argparse`; PyYAML handles configuration files and Pydantic defines tool boundaries.
 
 ## Repository Tree
 
@@ -31,6 +32,7 @@ numa/
 │   ├── plugins.md
 │   ├── quick-start.md
 │   ├── runtime-policies.md
+│   ├── task-persistence.md
 │   └── vision.md
 ├── examples/
 │   ├── async_runtime.py
@@ -39,7 +41,8 @@ numa/
 │   ├── model_provider.py
 │   ├── runtime_resilience.py
 │   ├── structured_events.py
-│   └── sqlite_memory.py
+│   ├── sqlite_memory.py
+│   └── task_resume.py
 ├── src/
 │   └── numa/
 │       ├── agents/
@@ -70,7 +73,13 @@ numa/
 │       ├── runtime/
 │       │   ├── async_runtime.py
 │       │   ├── policies.py
+│       │   ├── task_persistence.py
 │       │   └── runtime.py
+│       ├── tasks/
+│       │   ├── base.py
+│       │   ├── codec.py
+│       │   ├── in_memory.py
+│       │   └── sqlite.py
 │       ├── tools/
 │       │   ├── arithmetic.py
 │       │   ├── async_arithmetic.py
@@ -110,9 +119,15 @@ Defines structured Agent, Tool, and Provider lifecycle events, including explici
 
 ### `runtime`
 
-Coordinates Agent and Tool invocations. `AgentRuntime` executes synchronous components; `AsyncAgentRuntime` awaits asynchronous components, can gather independent Agent runs concurrently, and applies immutable timeout and retry policies. Both change task state, record results, validate Tool boundaries, emit structured events, log lifecycle transitions, and convert implementation failures into framework exceptions.
+Coordinates Agent and Tool invocations. `AgentRuntime` executes synchronous components; `AsyncAgentRuntime` awaits asynchronous components, can gather independent Agent runs concurrently, and applies immutable timeout and retry policies. Both change task state, record results, optionally persist lifecycle snapshots, validate Tool boundaries, emit structured events, log lifecycle transitions, and convert implementation failures into framework exceptions.
 
 Async policy timeouts cover all attempts and backoff delays. External cancellation is never retried or wrapped. Schema validation and Tool lookup remain outside the retry boundary.
+
+### `tasks`
+
+Defines `TaskStore` and versioned `TaskRecord` snapshots containing Task state, Context, owning Agent identity, and update time. `InMemoryTaskStore` supports tests while `SQLiteTaskStore` provides local durability. Runtime resume returns completed results directly and replays other states from the Agent invocation boundary.
+
+Stores preserve only the latest snapshot for each Task ID. They do not restore Python stacks or in-flight I/O and do not guarantee exactly-once side effects.
 
 ### `tools`
 
@@ -192,6 +207,7 @@ Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidation
 
 - **Model integration:** implement `ModelProvider` adapters in optional packages and inject them into application Agents.
 - **Persistent memory:** add specialized PostgreSQL, Redis, or vector retrieval contracts without expanding the minimal key-value interface prematurely.
+- **Task persistence:** add distributed stores, leases, history, and worker coordination without changing the local snapshot contract.
 - **Tool ecosystem:** implement `Tool` adapters and add permission, isolation, retry, and telemetry policy around registration.
 - **Runtime policies:** add middleware composition and specialized policies without changing synchronous APIs or hiding blocking work in the event loop.
 - **Planning:** compose tasks above `AgentRuntime`; do not embed planning policy into the base runtime.
@@ -201,4 +217,4 @@ Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidation
 
 ## Current Boundaries
 
-The foundation does not include vendor LLM adapters, prompt templates, autonomous loops, network services, distributed execution, or multi-agent coordination. Synchronous Runtime resilience and side-effect compensation are intentionally deferred.
+The foundation does not include vendor LLM adapters, prompt templates, autonomous loops, network services, distributed execution, or multi-agent coordination. Synchronous Runtime resilience, distributed Task ownership, and side-effect compensation are intentionally deferred.

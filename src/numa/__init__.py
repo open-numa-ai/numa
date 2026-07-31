@@ -13,6 +13,7 @@ from numa.events import (
 from numa.memory import Memory
 from numa.providers import ModelProvider, ModelRequest, ModelResponse, ModelUsage
 from numa.runtime import AgentRuntime, AsyncAgentRuntime, ResiliencePolicy, RetryPolicy
+from numa.tasks import InMemoryTaskStore, SQLiteTaskStore, TaskRecord, TaskStore
 from numa.tools import AsyncAddTool, AsyncTool, Tool
 
 __all__ = [
@@ -29,6 +30,7 @@ __all__ = [
     "EventHandler",
     "EventType",
     "InMemoryEventHandler",
+    "InMemoryTaskStore",
     "Memory",
     "Message",
     "MessageRole",
@@ -39,8 +41,11 @@ __all__ = [
     "NoOpEventHandler",
     "ResiliencePolicy",
     "RetryPolicy",
+    "SQLiteTaskStore",
     "Task",
+    "TaskRecord",
     "TaskStatus",
+    "TaskStore",
     "Tool",
 ]
 

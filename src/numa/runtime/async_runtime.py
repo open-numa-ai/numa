@@ -25,6 +25,8 @@ from numa.core import (
 from numa.events import Event, EventBus, EventType
 from numa.memory import InMemoryMemory, Memory
 from numa.runtime.policies import ResiliencePolicy
+from numa.runtime.task_persistence import load_task_for_resume, persist_task
+from numa.tasks import TaskStore
 from numa.tools import AsyncTool
 from numa.utils.logging import get_logger
 
@@ -45,10 +47,12 @@ class AsyncAgentRuntime:
         memory: Memory | None = None,
         event_bus: EventBus | None = None,
         resilience_policy: ResiliencePolicy | None = None,
+        task_store: TaskStore | None = None,
     ) -> None:
         self.memory = memory or InMemoryMemory()
         self.event_bus = event_bus or EventBus()
         self.resilience_policy = resilience_policy or ResiliencePolicy()
+        self.task_store = task_store
         self._tools: dict[str, AsyncTool] = {}
 
     def register_tool(self, tool: AsyncTool) -> None:
@@ -154,6 +158,9 @@ class AsyncAgentRuntime:
         """Run one asynchronous Agent task and update its lifecycle state."""
         execution_context = context or Context()
         task.status = TaskStatus.RUNNING
+        task.result = None
+        task.error = None
+        persist_task(self.task_store, agent.name, task, execution_context)
         self.event_bus.emit(
             Event(
                 type=EventType.AGENT_STARTED,
@@ -172,6 +179,13 @@ class AsyncAgentRuntime:
         except asyncio.CancelledError:
             task.status = TaskStatus.CANCELLED
             task.error = "Agent execution cancelled"
+            try:
+                persist_task(self.task_store, agent.name, task, execution_context)
+            except Exception:
+                logger.exception(
+                    "Could not persist cancelled Agent task",
+                    extra={"agent": agent.name, "task_id": task.id},
+                )
             logger.info(
                 "Async Agent task cancelled",
                 extra={"agent": agent.name, "task_id": task.id},
@@ -188,6 +202,7 @@ class AsyncAgentRuntime:
             timeout_error = AgentTimeoutError(f"Agent {agent.name!r} timed out task {task.id}")
             task.status = TaskStatus.FAILED
             task.error = str(timeout_error)
+            persist_task(self.task_store, agent.name, task, execution_context)
             logger.warning(
                 "Async Agent task timed out",
                 extra={"agent": agent.name, "task_id": task.id},
@@ -204,6 +219,7 @@ class AsyncAgentRuntime:
         except Exception as exc:
             task.status = TaskStatus.FAILED
             task.error = str(exc)
+            persist_task(self.task_store, agent.name, task, execution_context)
             logger.exception(
                 "Async Agent task failed",
                 extra={"agent": agent.name, "task_id": task.id},
@@ -221,6 +237,7 @@ class AsyncAgentRuntime:
         execution_context.add_message(result)
         task.result = result
         task.status = TaskStatus.COMPLETED
+        persist_task(self.task_store, agent.name, task, execution_context)
         logger.info(
             "Async Agent task completed",
             extra={"agent": agent.name, "task_id": task.id},
@@ -233,6 +250,24 @@ class AsyncAgentRuntime:
             )
         )
         return result
+
+    async def resume(
+        self,
+        agent: AsyncAgent,
+        task_id: str,
+        resilience_policy: ResiliencePolicy | None = None,
+    ) -> Message:
+        """Return a completed result or rerun a persisted unfinished Task."""
+        record = load_task_for_resume(self.task_store, task_id, agent.name)
+        if record.task.status is TaskStatus.COMPLETED:
+            assert record.task.result is not None
+            return record.task.result
+        return await self.run(
+            agent,
+            record.task,
+            record.context,
+            resilience_policy=resilience_policy,
+        )
 
     async def gather(
         self,

@@ -18,6 +18,8 @@ from numa.core import (
 )
 from numa.events import Event, EventBus, EventType
 from numa.memory import InMemoryMemory, Memory
+from numa.runtime.task_persistence import load_task_for_resume, persist_task
+from numa.tasks import TaskStore
 from numa.tools import Tool
 from numa.utils.logging import get_logger
 
@@ -27,9 +29,15 @@ logger = get_logger(__name__)
 class AgentRuntime:
     """Coordinate an agent, task lifecycle, tools, and memory."""
 
-    def __init__(self, memory: Memory | None = None, event_bus: EventBus | None = None) -> None:
+    def __init__(
+        self,
+        memory: Memory | None = None,
+        event_bus: EventBus | None = None,
+        task_store: TaskStore | None = None,
+    ) -> None:
         self.memory = memory or InMemoryMemory()
         self.event_bus = event_bus or EventBus()
+        self.task_store = task_store
         self._tools: dict[str, Tool] = {}
 
     def register_tool(self, tool: Tool) -> None:
@@ -98,6 +106,9 @@ class AgentRuntime:
         """Run one agent task and update its lifecycle state."""
         execution_context = context or Context()
         task.status = TaskStatus.RUNNING
+        task.result = None
+        task.error = None
+        persist_task(self.task_store, agent.name, task, execution_context)
         self.event_bus.emit(
             Event(
                 type=EventType.AGENT_STARTED,
@@ -112,6 +123,7 @@ class AgentRuntime:
         except Exception as exc:
             task.status = TaskStatus.FAILED
             task.error = str(exc)
+            persist_task(self.task_store, agent.name, task, execution_context)
             logger.exception("Agent task failed", extra={"agent": agent.name, "task_id": task.id})
             self.event_bus.emit(
                 Event(
@@ -126,6 +138,7 @@ class AgentRuntime:
         execution_context.add_message(result)
         task.result = result
         task.status = TaskStatus.COMPLETED
+        persist_task(self.task_store, agent.name, task, execution_context)
         logger.info("Agent task completed", extra={"agent": agent.name, "task_id": task.id})
         self.event_bus.emit(
             Event(
@@ -135,3 +148,11 @@ class AgentRuntime:
             )
         )
         return result
+
+    def resume(self, agent: Agent, task_id: str) -> Message:
+        """Return a completed result or rerun a persisted unfinished Task."""
+        record = load_task_for_resume(self.task_store, task_id, agent.name)
+        if record.task.status is TaskStatus.COMPLETED:
+            assert record.task.result is not None
+            return record.task.result
+        return self.run(agent, record.task, record.context)
