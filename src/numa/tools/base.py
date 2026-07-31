@@ -51,6 +51,7 @@ class ToolSchema(ABC):
             return None
         return self.output_model.model_json_schema()
 
+
 class Tool(ToolSchema):
     """A capability that can be registered with a synchronous Runtime."""
 
