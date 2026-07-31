@@ -1,6 +1,6 @@
 """Public package interface for Numa."""
 
-from numa.agents import Agent
+from numa.agents import Agent, AsyncAgent, AsyncEchoAgent
 from numa.core import Context, Message, MessageRole, Task, TaskStatus
 from numa.events import (
     Event,
@@ -12,12 +12,17 @@ from numa.events import (
 )
 from numa.memory import Memory
 from numa.providers import ModelProvider, ModelRequest, ModelResponse, ModelUsage
-from numa.runtime import AgentRuntime
-from numa.tools import Tool
+from numa.runtime import AgentRuntime, AsyncAgentRuntime
+from numa.tools import AsyncAddTool, AsyncTool, Tool
 
 __all__ = [
     "Agent",
     "AgentRuntime",
+    "AsyncAddTool",
+    "AsyncAgent",
+    "AsyncAgentRuntime",
+    "AsyncEchoAgent",
+    "AsyncTool",
     "Context",
     "Event",
     "EventBus",

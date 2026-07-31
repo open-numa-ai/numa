@@ -1,6 +1,6 @@
 # Architecture
 
-Numa v0.2 establishes small interfaces, optional integration boundaries, and a synchronous execution path. It deliberately avoids planning policy, distributed queues, and multi-agent protocols until their requirements are proven by real integrations.
+Numa establishes small interfaces, optional integration boundaries, and parallel synchronous and asynchronous execution paths. It deliberately avoids planning policy, distributed queues, and multi-agent protocols until their requirements are proven by real integrations.
 
 ## Design Decisions
 
@@ -8,7 +8,7 @@ Numa v0.2 establishes small interfaces, optional integration boundaries, and a s
 2. **Separate data from behavior.** `Task`, `Message`, and `Context` are framework-neutral models. `Agent`, `Tool`, and `Memory` define behavioral boundaries.
 3. **Keep orchestration thin.** `AgentRuntime` controls task lifecycle and dependency access, but does not implement agent strategy.
 4. **Depend on abstractions.** Runtime and application code can replace memory and tool adapters without changing agents.
-5. **Start synchronously.** A clear synchronous contract is easier to test. Async execution can be introduced as a parallel runtime contract when needed.
+5. **Keep sync and async explicit.** `AgentRuntime` and `AsyncAgentRuntime` accept their corresponding component contracts without implicit thread offloading or event-loop management.
 6. **Use focused dependencies.** Logging and CLI behavior build on `logging` and `argparse`; PyYAML handles configuration files and Pydantic defines tool boundaries.
 
 ## Repository Tree
@@ -31,6 +31,7 @@ numa/
 │   ├── quick-start.md
 │   └── vision.md
 ├── examples/
+│   ├── async_runtime.py
 │   ├── basic_agent.py
 │   ├── basic_tool.py
 │   ├── model_provider.py
@@ -39,6 +40,8 @@ numa/
 ├── src/
 │   └── numa/
 │       ├── agents/
+│       │   ├── async_base.py
+│       │   ├── async_echo.py
 │       │   ├── base.py
 │       │   └── echo.py
 │       ├── config/
@@ -62,9 +65,12 @@ numa/
 │       │   ├── echo.py
 │       │   └── exceptions.py
 │       ├── runtime/
+│       │   ├── async_runtime.py
 │       │   └── runtime.py
 │       ├── tools/
 │       │   ├── arithmetic.py
+│       │   ├── async_arithmetic.py
+│       │   ├── async_base.py
 │       │   └── base.py
 │       ├── utils/
 │       │   └── logging.py
@@ -92,7 +98,7 @@ Contains stable data contracts and the exception hierarchy. It has no provider, 
 
 ### `agents`
 
-Defines the `Agent` abstraction. An agent owns task-specific behavior and returns one `Message`. `EchoAgent` is a deterministic example, not an AI implementation.
+Defines parallel `Agent` and `AsyncAgent` abstractions. An Agent owns task-specific behavior and returns one `Message`. Echo implementations are deterministic examples, not AI integrations.
 
 ### `events`
 
@@ -100,11 +106,11 @@ Defines structured Agent, Tool, and Provider lifecycle events. `EventBus` dispat
 
 ### `runtime`
 
-Coordinates agent and tool invocations. It changes task state, records agent results, validates registered tool boundaries, emits structured events, logs lifecycle transitions, and converts implementation failures into framework exceptions.
+Coordinates Agent and Tool invocations. `AgentRuntime` executes synchronous components; `AsyncAgentRuntime` awaits asynchronous components and can gather independent Agent runs concurrently. Both change task state, record results, validate Tool boundaries, emit structured events, log lifecycle transitions, and convert implementation failures into framework exceptions.
 
 ### `tools`
 
-Defines named executable capabilities. Each tool exposes a Pydantic input model, an optional output model, and generated JSON Schemas. `AgentRuntime.execute_tool()` validates and normalizes input before execution and validates declared output afterward.
+Defines named synchronous and asynchronous capabilities. Each Tool exposes a Pydantic input model, an optional output model, and generated JSON Schemas. Runtime execution validates and normalizes input before execution and validates declared output afterward.
 
 `ToolInput` rejects undeclared arguments by default. Direct calls to `Tool.execute()` remain available for low-level use, but bypass runtime lookup, validation, logging, and exception conversion.
 
@@ -181,7 +187,7 @@ Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidation
 - **Model integration:** implement `ModelProvider` adapters in optional packages and inject them into application Agents.
 - **Persistent memory:** add specialized PostgreSQL, Redis, or vector retrieval contracts without expanding the minimal key-value interface prematurely.
 - **Tool ecosystem:** implement `Tool` adapters and add permission, isolation, retry, and telemetry policy around registration.
-- **Async runtime:** add an async agent contract and runtime without changing the synchronous API.
+- **Async policies:** add cancellation, timeout, and retry behavior without changing synchronous APIs or hiding blocking work in the event loop.
 - **Planning:** compose tasks above `AgentRuntime`; do not embed planning policy into the base runtime.
 - **Multi-agent collaboration:** add routing and message transport as a higher orchestration layer.
 - **Observability:** attach logging handlers or implement `EventHandler` adapters for metrics, tracing, audit, and OpenTelemetry backends.
@@ -189,4 +195,4 @@ Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidation
 
 ## Current Boundaries
 
-The foundation does not include vendor LLM adapters, prompt templates, autonomous loops, network services, distributed execution, or multi-agent coordination. These omissions are intentional while v0.2 integration boundaries are developed incrementally.
+The foundation does not include vendor LLM adapters, prompt templates, autonomous loops, network services, distributed execution, or multi-agent coordination. Async cancellation, timeout, and retry policies are also intentionally deferred.

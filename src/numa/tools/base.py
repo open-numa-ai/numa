@@ -16,8 +16,8 @@ class EmptyToolInput(ToolInput):
     """Input model for tools that accept no arguments."""
 
 
-class Tool(ABC):
-    """A capability that can be registered with an agent runtime."""
+class ToolSchema(ABC):
+    """Shared schema contract for synchronous and asynchronous Tools."""
 
     @property
     @abstractmethod
@@ -51,6 +51,10 @@ class Tool(ABC):
             return None
         return self.output_model.model_json_schema()
 
+
+class Tool(ToolSchema):
+    """A capability that can be registered with a synchronous Runtime."""
+
     @abstractmethod
     def execute(self, **arguments: Any) -> Any:
-        """Execute the tool with validated implementation-specific arguments."""
+        """Execute the Tool with validated implementation-specific arguments."""

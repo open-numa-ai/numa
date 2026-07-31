@@ -124,6 +124,34 @@ print(result)
 
 Use `tool.input_schema` and `tool.output_schema` when another system needs JSON Schema. Calls through `AgentRuntime.execute_tool()` validate both boundaries. Direct `Tool.execute()` calls intentionally bypass framework validation.
 
+## Run Asynchronous Components
+
+`AsyncAgentRuntime` mirrors the synchronous task, Tool validation, error, and event semantics while awaiting only explicit `AsyncAgent` and `AsyncTool` implementations.
+
+```python
+import asyncio
+
+from numa import AsyncAgentRuntime, Task
+from numa.agents import AsyncEchoAgent
+from numa.tools import AsyncAddTool
+
+
+async def main() -> None:
+    runtime = AsyncAgentRuntime()
+    runtime.register_tool(AsyncAddTool())
+    messages = await runtime.gather(
+        (AsyncEchoAgent(), Task(description="first")),
+        (AsyncEchoAgent(), Task(description="second")),
+    )
+    total = await runtime.execute_tool("async_add", left=6, right=7)
+    print([message.content for message in messages], total)
+
+
+asyncio.run(main())
+```
+
+The async runtime does not implicitly run synchronous components in threads. Cancellation, timeouts, and retry policies remain application concerns until dedicated runtime policies are introduced.
+
 ## Inspect Installed Plugins
 
 Numa discovers built-in and third-party components through Python Entry Points.
