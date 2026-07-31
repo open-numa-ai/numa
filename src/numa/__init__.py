@@ -18,9 +18,9 @@ from numa.tools import AsyncAddTool, AsyncTool, Tool
 __all__ = [
     "Agent",
     "AgentRuntime",
+    "AsyncAddTool",
     "AsyncAgent",
     "AsyncAgentRuntime",
-    "AsyncAddTool",
     "AsyncEchoAgent",
     "AsyncTool",
     "Context",
