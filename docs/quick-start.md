@@ -158,6 +158,26 @@ with SQLiteMemory("numa-memory.db") as memory:
 
 The adapter creates its table automatically. Use it as a context manager or call `close()` explicitly. Values must be valid JSON; arbitrary Python objects and non-finite numbers are rejected with `MemoryError`.
 
+## Use a Model Provider
+
+The provider contract separates Agent behavior from vendor SDKs. The built-in Echo Provider is deterministic and performs no model inference.
+
+```python
+from numa import Message, MessageRole, ModelRequest
+from numa.providers import EchoModelProvider
+
+provider = EchoModelProvider()
+response = provider.generate(
+    ModelRequest(
+        messages=(Message(role=MessageRole.USER, content="Hello, Numa"),),
+        parameters={"temperature": 0},
+    )
+)
+print(response.message.content)
+```
+
+Concrete adapters implement `ModelProvider.generate()` and translate `ModelRequest` and `ModelResponse` at the SDK boundary. See [Model Providers](model-providers.md) for the contract and error semantics.
+
 ## Quality Checks
 
 ```bash

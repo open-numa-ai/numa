@@ -3,6 +3,7 @@
 from numa.agents import Agent
 from numa.core import Context, Message, MessageRole, Task, TaskStatus
 from numa.memory import Memory
+from numa.providers import ModelProvider, ModelRequest, ModelResponse, ModelUsage
 from numa.runtime import AgentRuntime
 from numa.tools import Tool
 
@@ -13,6 +14,10 @@ __all__ = [
     "Memory",
     "Message",
     "MessageRole",
+    "ModelProvider",
+    "ModelRequest",
+    "ModelResponse",
+    "ModelUsage",
     "Task",
     "TaskStatus",
     "Tool",
