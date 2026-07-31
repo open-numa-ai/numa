@@ -178,6 +178,24 @@ print(response.message.content)
 
 Concrete adapters implement `ModelProvider.generate()` and translate `ModelRequest` and `ModelResponse` at the SDK boundary. See [Model Providers](model-providers.md) for the contract and error semantics.
 
+## Observe Structured Events
+
+Attach one or more handlers to an `EventBus` to observe Agent and Tool execution:
+
+```python
+from numa import AgentRuntime, EventBus, InMemoryEventHandler, Task
+from numa.agents import EchoAgent
+
+collector = InMemoryEventHandler()
+runtime = AgentRuntime(event_bus=EventBus([collector]))
+runtime.run(EchoAgent(), Task(description="Hello"))
+
+for event in collector.events:
+    print(event.type.value, event.execution_id)
+```
+
+Use `InstrumentedModelProvider` to observe a Provider without changing its implementation. Handler failures are logged and do not interrupt framework execution. See [Structured Events](events.md) for event fields, correlation, privacy, and custom handlers.
+
 ## Quality Checks
 
 ```bash

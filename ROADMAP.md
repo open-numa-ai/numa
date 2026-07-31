@@ -21,7 +21,7 @@ Goal: validate contracts through real but optional adapters.
 - [x] Plugin discovery through Python entry points
 - [x] Persistent memory adapter
 - [x] Optional model provider interfaces
-- [ ] Structured event and tracing hooks
+- [x] Structured event and tracing hooks
 
 ## v0.3: Runtime Evolution
 

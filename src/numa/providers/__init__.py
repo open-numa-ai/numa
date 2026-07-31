@@ -7,9 +7,11 @@ from numa.providers.exceptions import (
     ModelProviderError,
     ModelProviderExecutionError,
 )
+from numa.providers.instrumented import InstrumentedModelProvider
 
 __all__ = [
     "EchoModelProvider",
+    "InstrumentedModelProvider",
     "ModelProvider",
     "ModelProviderConfigurationError",
     "ModelProviderError",
