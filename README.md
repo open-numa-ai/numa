@@ -1,97 +1,89 @@
 # Numa
 
-> An open-source personal intelligence system that helps humans discover knowledge beyond their awareness.
+[![CI](https://github.com/open-numa-ai/numa/actions/workflows/ci.yml/badge.svg)](https://github.com/open-numa-ai/numa/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
 
----
+Numa is a modular Python framework for building intelligent agent systems. It provides small, explicit abstractions for agents, task execution, tools, memory, context, configuration, and future multi-agent coordination.
 
-## Vision
+> **Project status:** v0.1.0 foundation. The public APIs may evolve before the first stable release.
 
-The internet has given humans access to unlimited information.
+## Why Numa?
 
-Google helped us search.
-Social platforms helped us discover content.
+Agent applications often couple model providers, orchestration, state, and tools into one implementation. Numa keeps these responsibilities separate so applications can replace infrastructure without rewriting agent behavior.
 
-But one fundamental problem remains:
+The initial release intentionally includes no LLM integration or complex planning algorithm.
 
-> We don't know what we don't know.
+## Features
 
-Numa aims to become a personal intelligence layer that continuously learns with you, discovers valuable knowledge, challenges your assumptions, and helps you evolve with AI.
+- Typed `Agent`, `Tool`, and `Memory` extension points
+- Synchronous `AgentRuntime` with explicit task lifecycle handling
+- Framework-neutral `Task`, `Message`, and `Context` models
+- YAML, JSON, environment, and default configuration layers
+- Standard-library logging with a unified Numa namespace
+- Basic `numa init` and `numa run example_agent` commands
+- Python 3.11+ support with uv, Ruff, Mypy, and Pytest
 
----
+## Quick Start
 
-## What is Numa?
+Install [uv](https://docs.astral.sh/uv/), clone the repository, and synchronize the environment:
 
-Numa is not another chatbot.
+```bash
+git clone https://github.com/open-numa-ai/numa.git
+cd numa
+uv sync --all-groups
+```
 
-It is a personal intelligence system built around:
+Create a default configuration and run the built-in example agent:
 
-- Long-term memory
-- Knowledge discovery
-- Personal knowledge graph
-- Autonomous research
-- Reasoning and reflection
+```bash
+uv run numa init
+uv run numa run example_agent --task "Hello, Numa"
+```
 
----
+Or use the public Python API:
+
+```python
+from numa import AgentRuntime, Task
+from numa.agents import EchoAgent
+
+result = AgentRuntime().run(EchoAgent(), Task(description="Hello, Numa"))
+print(result.content)
+```
+
+See the [Quick Start guide](docs/quick-start.md) for configuration and development commands.
 
 ## Architecture
 
-                Numa
+```text
+Application
+    |
+AgentRuntime ---- Tool registry
+    |                 |
+  Agent             Tools
+    |
+Task + Context ---- Memory
+```
 
-                  |
-      ------------------------
+Numa depends on abstractions at its boundaries. Agents own task behavior, the runtime owns execution lifecycle, tools expose capabilities, and memory adapters own persistence.
 
-      Intelligence Layer
+See [Architecture](docs/architecture.md) for module responsibilities and extension points.
 
-      - Research Agent
-      - Discovery Engine
-      - Reasoning Engine
+## Development
 
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy
+uv run pytest
+```
 
-      Memory Layer
-
-      - Personal Memory
-      - Knowledge Graph
-
-
-      Runtime Layer
-
-      - Agent Runtime
-      - Tool Ecosystem
-
-      ------------------------
-
-                  |
-
-              Internet
-
----
+Read [Contributing](CONTRIBUTING.md) before opening an issue or pull request.
 
 ## Roadmap
 
-### Phase 1
-Personal Knowledge Agent
+See [ROADMAP.md](ROADMAP.md) for planned runtime, plugin, asynchronous, persistence, and multi-agent capabilities.
 
-- [ ] Memory system
-- [ ] User profile
-- [ ] Daily intelligence report
+## License
 
-
-### Phase 2
-Knowledge Discovery
-
-- [ ] Paper discovery
-- [ ] Github intelligence
-- [ ] News analysis
-
-
-### Phase 3
-Cognitive Agent
-
-- [ ] Challenge assumptions
-- [ ] Alternative perspectives
-- [ ] Long-term growth
-
-
-## Contributing
-
-We welcome contributors interested in building the future of personal intelligence.
+Numa is licensed under the [Apache License 2.0](LICENSE).

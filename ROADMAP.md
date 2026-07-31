@@ -1,40 +1,48 @@
 # Roadmap
 
-Numa is being developed in phases, starting with a focused personal knowledge agent and expanding toward a broader cognitive intelligence system.
+Numa evolves from stable framework contracts toward production runtime capabilities. Roadmap items describe direction, not release guarantees.
 
-## Phase 1: Personal Knowledge Agent
+## v0.1: Project Foundation
 
-Goal: create the foundation for a user-owned personal intelligence layer.
+Goal: establish a small, typed, testable framework core.
 
-- [ ] Memory system
-- [ ] User profile
-- [ ] Daily intelligence report
-- [ ] Basic source ingestion
-- [ ] Local-first project structure
+- [x] Python 3.11+ `src` package layout
+- [x] Agent, task, message, context, tool, and memory contracts
+- [x] Synchronous agent runtime
+- [x] YAML, JSON, and environment configuration
+- [x] Unified logging and CLI foundation
+- [x] Ruff, Mypy, Pytest, and GitHub Actions setup
 
-## Phase 2: Knowledge Discovery
+## v0.2: Integration Boundaries
 
-Goal: help users discover relevant knowledge they did not already know to search for.
+Goal: validate contracts through real but optional adapters.
 
-- [ ] Paper discovery
-- [ ] GitHub intelligence
-- [ ] News analysis
-- [ ] Source ranking and deduplication
-- [ ] Topic monitoring
+- [ ] Tool input and output schemas
+- [ ] Plugin discovery through Python entry points
+- [ ] Persistent memory adapter
+- [ ] Optional model provider interfaces
+- [ ] Structured event and tracing hooks
 
-## Phase 3: Cognitive Agent
+## v0.3: Runtime Evolution
 
-Goal: support deeper reasoning, reflection, and long-term growth.
+Goal: support larger and concurrent workloads without changing core semantics.
 
-- [ ] Challenge assumptions
-- [ ] Offer alternative perspectives
-- [ ] Track long-term learning patterns
-- [ ] Generate reflection prompts
-- [ ] Connect discoveries to goals and memory
+- [ ] Async agent and tool contracts
+- [ ] Cancellation, timeout, and retry policies
+- [ ] Task persistence and resumability
+- [ ] Runtime middleware
+- [ ] Security and tool permission policies
+
+## Future
+
+- Planning and workflow composition
+- Multi-agent routing and collaboration
+- Distributed runtime adapters
+- Evaluation and observability integrations
 
 ## Guiding Priorities
 
-- User agency and privacy
-- Clear provenance for discovered knowledge
-- Long-term usefulness over short-term novelty
-- Extensible architecture for agents, tools, and memory systems
+- Stable and understandable public APIs
+- Provider and infrastructure independence
+- Security, privacy, and observability
+- Focused releases backed by tests and documentation

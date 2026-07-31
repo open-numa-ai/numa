@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to Numa!
 
-Numa is an early-stage open-source project exploring personal intelligence, long-term memory, knowledge discovery, and reflective AI systems. We welcome contributions from developers, researchers, designers, writers, and AI enthusiasts.
+Numa is an early-stage open-source framework for modular agent systems. We welcome contributions from developers, researchers, designers, writers, and AI practitioners.
 
 ## Ways to Contribute
 
@@ -10,15 +10,15 @@ Numa is an early-stage open-source project exploring personal intelligence, long
 - Suggest new features and product directions.
 - Improve documentation and examples.
 - Propose architecture changes or design notes.
-- Submit code changes for memory, discovery, research, and reasoning modules.
-- Share references, papers, and implementation tradeoffs relevant to personal intelligence systems.
+- Submit code changes for agents, runtime, tools, memory, and infrastructure.
+- Share references and implementation tradeoffs relevant to agent systems.
 
 ## Contribution Principles
 
 - Keep changes focused and easy to review.
 - Prefer clear explanations over clever abstractions.
 - Document assumptions, limitations, and open questions.
-- Treat privacy, user agency, and data ownership as first-class concerns.
+- Treat security, privacy, and observability as first-class concerns.
 
 ## Getting Started
 
@@ -29,6 +29,23 @@ Before contributing, please:
 3. Search before creating a new issue.
 4. Fork the repository and create a focused branch for your change.
 5. Update documentation when behavior or direction changes.
+
+## Development
+
+Install Python 3.11+ and uv, then synchronize the development environment:
+
+```bash
+uv sync --all-groups
+```
+
+Run the same checks used by CI:
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy
+uv run pytest
+```
 
 Repository:
 
@@ -50,4 +67,4 @@ Open a pull request with context, tradeoffs, and validation notes. Small, focuse
 
 ## Code of Conduct
 
-Be thoughtful, respectful, and constructive. Numa is about helping humans think better; the project culture should reflect that.
+Be thoughtful, respectful, and constructive. Technical disagreement should focus on evidence, tradeoffs, and the needs of the project.
