@@ -22,11 +22,19 @@ Owns execution lifecycle, dependency access, logging, and error conversion. The 
 
 ### Tool
 
-Exposes a named capability. Future layers can add schemas, authorization, isolation, retries, and telemetry without expanding the base contract prematurely.
+Exposes a named capability with Pydantic input and optional output schemas. Future layers can add authorization, isolation, retries, and telemetry without expanding the base contract prematurely.
 
 ### Memory
 
-Defines basic storage behavior independently of a database. Search, vector retrieval, and transactional interfaces should be added as specialized contracts when required.
+Defines basic storage behavior independently of a database. The SQLite adapter provides JSON persistence while search, vector retrieval, and transactional interfaces remain specialized future contracts.
+
+### Model Provider
+
+Translates provider-neutral requests and responses at vendor SDK boundaries. Agent prompting and orchestration policy remain outside the provider contract.
+
+### Events
+
+Expose synchronous lifecycle hooks without coupling producers to observability vendors. Event handlers are failure-isolated and built-in events avoid request or response payloads.
 
 ### Configuration
 
@@ -36,11 +44,11 @@ Loads immutable settings with deterministic precedence. Secrets should enter thr
 
 During the v0.x series, APIs may evolve as integrations reveal missing requirements. Changes should remain focused, documented, typed, and covered by tests. Deprecation paths become mandatory before v1.0.
 
-## Non-Goals for v0.1.0
+## Current Non-Goals
 
-- LLM provider integrations
+- Bundled vendor LLM adapters
 - Prompt or planning frameworks
 - Autonomous execution loops
-- Persistent or vector memory
+- Vector memory and retrieval
 - Distributed and asynchronous execution
 - Multi-agent routing

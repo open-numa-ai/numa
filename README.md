@@ -6,7 +6,7 @@
 
 Numa is a modular Python framework for building intelligent agent systems. It provides small, explicit abstractions for agents, task execution, tools, memory, context, configuration, and future multi-agent coordination.
 
-> **Project status:** v0.2 integration boundaries are in development. The public APIs may evolve before the first stable release.
+> **Project status:** v0.2 integration boundaries are feature-complete. The public APIs may evolve before the first stable release.
 
 ## Why Numa?
 
@@ -21,6 +21,7 @@ The initial release intentionally includes no LLM integration or complex plannin
 - Entry-point discovery for third-party Agent and Tool plugins
 - SQLite-backed persistent memory for JSON-compatible values
 - Provider-neutral model request and response interfaces
+- Structured Agent, Tool, and Provider lifecycle events
 - Synchronous `AgentRuntime` with explicit task lifecycle handling
 - Framework-neutral `Task`, `Message`, and `Context` models
 - YAML, JSON, environment, and default configuration layers
@@ -99,6 +100,19 @@ response = provider.generate(
 print(response.message.content)
 ```
 
+Collect structured lifecycle events:
+
+```python
+from numa import AgentRuntime, EventBus, InMemoryEventHandler, Task
+from numa.agents import EchoAgent
+
+collector = InMemoryEventHandler()
+runtime = AgentRuntime(event_bus=EventBus([collector]))
+runtime.run(EchoAgent(), Task(description="Hello"))
+
+print([event.type.value for event in collector.events])
+```
+
 See the [Quick Start guide](docs/quick-start.md) for configuration and development commands.
 
 ## Architecture
@@ -118,6 +132,7 @@ Numa depends on abstractions at its boundaries. Agents own task behavior, the ru
 See [Architecture](docs/architecture.md) for module responsibilities and extension points.
 See [Plugins](docs/plugins.md) to publish Agent and Tool extensions as separate packages.
 See [Model Providers](docs/model-providers.md) to implement optional vendor adapters.
+See [Structured Events](docs/events.md) to integrate observability handlers.
 
 ## Development
 

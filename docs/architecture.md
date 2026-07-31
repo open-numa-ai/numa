@@ -1,6 +1,6 @@
 # Architecture
 
-Numa v0.1.0 establishes small interfaces and a synchronous execution path. It deliberately avoids model providers, planners, distributed queues, and multi-agent protocols until their requirements are proven by real integrations.
+Numa v0.2 establishes small interfaces, optional integration boundaries, and a synchronous execution path. It deliberately avoids planning policy, distributed queues, and multi-agent protocols until their requirements are proven by real integrations.
 
 ## Design Decisions
 
@@ -25,6 +25,7 @@ numa/
 ├── docs/
 │   ├── architecture.md
 │   ├── design.md
+│   ├── events.md
 │   ├── model-providers.md
 │   ├── plugins.md
 │   ├── quick-start.md
@@ -33,6 +34,7 @@ numa/
 │   ├── basic_agent.py
 │   ├── basic_tool.py
 │   ├── model_provider.py
+│   ├── structured_events.py
 │   └── sqlite_memory.py
 ├── src/
 │   └── numa/
@@ -43,6 +45,10 @@ numa/
 │       │   └── settings.py
 │       ├── core/
 │       │   ├── exceptions.py
+│       │   └── models.py
+│       ├── events/
+│       │   ├── bus.py
+│       │   ├── handlers.py
 │       │   └── models.py
 │       ├── memory/
 │       │   ├── base.py
@@ -88,9 +94,13 @@ Contains stable data contracts and the exception hierarchy. It has no provider, 
 
 Defines the `Agent` abstraction. An agent owns task-specific behavior and returns one `Message`. `EchoAgent` is a deterministic example, not an AI implementation.
 
+### `events`
+
+Defines structured Agent, Tool, and Provider lifecycle events. `EventBus` dispatches synchronously to registered handlers and isolates handler failures from framework execution. Built-in producers emit correlation IDs, component names, UTC timestamps, transition types, and minimal metadata without including prompts, arguments, or results.
+
 ### `runtime`
 
-Coordinates agent and tool invocations. It changes task state, records agent results, validates registered tool boundaries, logs lifecycle events, and converts implementation failures into framework exceptions.
+Coordinates agent and tool invocations. It changes task state, records agent results, validates registered tool boundaries, emits structured events, logs lifecycle transitions, and converts implementation failures into framework exceptions.
 
 ### `tools`
 
@@ -174,7 +184,7 @@ Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidation
 - **Async runtime:** add an async agent contract and runtime without changing the synchronous API.
 - **Planning:** compose tasks above `AgentRuntime`; do not embed planning policy into the base runtime.
 - **Multi-agent collaboration:** add routing and message transport as a higher orchestration layer.
-- **Observability:** attach structured, file, or telemetry handlers through the standard logging interface.
+- **Observability:** attach logging handlers or implement `EventHandler` adapters for metrics, tracing, audit, and OpenTelemetry backends.
 - **Plugins:** add compatibility metadata, version constraints, and optional plugin diagnostics without importing components during listing.
 
 ## Current Boundaries
