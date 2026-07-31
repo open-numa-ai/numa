@@ -1,6 +1,6 @@
 # Quick Start
 
-This guide runs Numa's v0.1.0 foundation without an LLM provider.
+This guide runs Numa's current framework foundation without an LLM provider.
 
 ## Requirements
 
@@ -123,6 +123,24 @@ print(result)
 ```
 
 Use `tool.input_schema` and `tool.output_schema` when another system needs JSON Schema. Calls through `AgentRuntime.execute_tool()` validate both boundaries. Direct `Tool.execute()` calls intentionally bypass framework validation.
+
+## Inspect Installed Plugins
+
+Numa discovers built-in and third-party components through Python Entry Points.
+
+```bash
+uv run numa plugins list
+uv run numa plugins list --type agent
+uv run numa plugins list --type tool
+```
+
+Run any discovered Agent by its registered name:
+
+```bash
+uv run numa run example_agent --task "Hello from a plugin"
+```
+
+Plugin packages use the `numa.agents` and `numa.tools` Entry Point groups. See the [Plugin guide](plugins.md) for package declarations and factory examples.
 
 ## Quality Checks
 

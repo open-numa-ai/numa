@@ -25,6 +25,7 @@ numa/
 ├── docs/
 │   ├── architecture.md
 │   ├── design.md
+│   ├── plugins.md
 │   ├── quick-start.md
 │   └── vision.md
 ├── examples/
@@ -43,6 +44,9 @@ numa/
 │       ├── memory/
 │       │   ├── base.py
 │       │   └── in_memory.py
+│       ├── plugins/
+│       │   ├── discovery.py
+│       │   └── exceptions.py
 │       ├── runtime/
 │       │   └── runtime.py
 │       ├── tools/
@@ -90,6 +94,12 @@ Defines named executable capabilities. Each tool exposes a Pydantic input model,
 
 Defines minimal key-value memory operations. `InMemoryMemory` supports examples and tests; persistent adapters can implement the same contract.
 
+### `plugins`
+
+Discovers Agent and Tool factories from the `numa.agents` and `numa.tools` Entry Point groups. Discovery records names without importing plugin code. A plugin is loaded only when requested, then its factory result and component name are validated against the registered contract.
+
+Built-in components use the same lazy `Plugin` descriptor as third-party packages. Duplicate names fail discovery instead of silently replacing an implementation.
+
 ### `config`
 
 Loads typed defaults, JSON or YAML files, then environment overrides. Configuration remains immutable after loading so execution behavior is predictable.
@@ -100,7 +110,7 @@ Contains narrow shared infrastructure. The logging helper configures only the `n
 
 ### `cli`
 
-Provides project initialization and a basic agent runner. It is an adapter over public APIs rather than a separate execution engine.
+Provides project initialization, plugin inspection, and an Agent runner backed by plugin discovery. It is an adapter over public APIs rather than a separate execution engine.
 
 ## Execution Flow
 
@@ -149,7 +159,7 @@ Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidation
 - **Planning:** compose tasks above `AgentRuntime`; do not embed planning policy into the base runtime.
 - **Multi-agent collaboration:** add routing and message transport as a higher orchestration layer.
 - **Observability:** attach structured, file, or telemetry handlers through the standard logging interface.
-- **Plugins:** replace the CLI's built-in agent registry with Python entry-point discovery.
+- **Plugins:** add compatibility metadata, version constraints, and optional plugin diagnostics without importing components during listing.
 
 ## Current Boundaries
 

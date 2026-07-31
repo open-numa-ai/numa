@@ -6,7 +6,7 @@
 
 Numa is a modular Python framework for building intelligent agent systems. It provides small, explicit abstractions for agents, task execution, tools, memory, context, configuration, and future multi-agent coordination.
 
-> **Project status:** v0.1.0 foundation. The public APIs may evolve before the first stable release.
+> **Project status:** v0.2 integration boundaries are in development. The public APIs may evolve before the first stable release.
 
 ## Why Numa?
 
@@ -18,6 +18,7 @@ The initial release intentionally includes no LLM integration or complex plannin
 
 - Typed `Agent`, `Tool`, and `Memory` extension points
 - Pydantic-backed tool input/output schemas and runtime validation
+- Entry-point discovery for third-party Agent and Tool plugins
 - Synchronous `AgentRuntime` with explicit task lifecycle handling
 - Framework-neutral `Task`, `Message`, and `Context` models
 - YAML, JSON, environment, and default configuration layers
@@ -64,6 +65,13 @@ runtime.register_tool(AddTool())
 print(runtime.execute_tool("add", left=2, right=3))
 ```
 
+Inspect installed plugins:
+
+```bash
+uv run numa plugins list
+uv run numa plugins list --type agent
+```
+
 See the [Quick Start guide](docs/quick-start.md) for configuration and development commands.
 
 ## Architecture
@@ -81,6 +89,7 @@ Task + Context ---- Memory
 Numa depends on abstractions at its boundaries. Agents own task behavior, the runtime owns execution lifecycle, tools expose capabilities, and memory adapters own persistence.
 
 See [Architecture](docs/architecture.md) for module responsibilities and extension points.
+See [Plugins](docs/plugins.md) to publish Agent and Tool extensions as separate packages.
 
 ## Development
 
