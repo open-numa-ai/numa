@@ -13,7 +13,7 @@ Every `Event` contains:
 - A UTC timestamp
 - Structured metadata
 
-Built-in event types cover Agent, Tool, and Provider started, completed, and failed transitions.
+Built-in event types cover Agent, Tool, and Provider started, completed, and failed transitions. Async Agent and Tool execution also emit explicit cancelled transitions.
 
 Numa does not include task descriptions, prompts, model parameters, tool arguments, or results in built-in events. Custom handlers remain responsible for protecting any metadata they add.
 
@@ -72,4 +72,4 @@ class MetricsHandler(EventHandler):
 
 ## Current Boundaries
 
-The event layer is synchronous and in-process. It does not provide durable queues, distributed context propagation, sampling, spans, exporters, or OpenTelemetry integration. Those capabilities can be implemented by handlers or future adapters without changing lifecycle producers.
+The event layer is synchronous and in-process, including when events originate from `AsyncAgentRuntime`. Handlers should return quickly to avoid blocking the event loop. The layer does not provide durable queues, distributed context propagation, sampling, spans, exporters, or OpenTelemetry integration. Those capabilities can be implemented by handlers or future adapters without changing lifecycle producers.

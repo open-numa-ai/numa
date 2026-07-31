@@ -24,6 +24,7 @@ The initial release intentionally includes no LLM integration or complex plannin
 - Structured Agent, Tool, and Provider lifecycle events
 - Synchronous `AgentRuntime` with explicit task lifecycle handling
 - Parallel `AsyncAgent`, `AsyncTool`, and `AsyncAgentRuntime` contracts
+- Explicit async timeout, cancellation, and bounded retry policies
 - Framework-neutral `Task`, `Message`, and `Context` models
 - YAML, JSON, environment, and default configuration layers
 - Standard-library logging with a unified Numa namespace
@@ -154,6 +155,7 @@ See [Architecture](docs/architecture.md) for module responsibilities and extensi
 See [Plugins](docs/plugins.md) to publish Agent and Tool extensions as separate packages.
 See [Model Providers](docs/model-providers.md) to implement optional vendor adapters.
 See [Structured Events](docs/events.md) to integrate observability handlers.
+See [Runtime Resilience Policies](docs/runtime-policies.md) to configure async deadlines and retries.
 
 ## Development
 

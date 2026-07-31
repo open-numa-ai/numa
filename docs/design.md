@@ -18,7 +18,7 @@ Receives a `Task` and `Context`, then returns a `Message`. `Agent` and `AsyncAge
 
 ### Runtime
 
-Owns execution lifecycle, dependency access, logging, and error conversion. `AgentRuntime` executes synchronous contracts; `AsyncAgentRuntime` awaits asynchronous contracts and supports concurrent independent runs. Neither runtime implicitly converts between execution modes.
+Owns execution lifecycle, dependency access, logging, and error conversion. `AgentRuntime` executes synchronous contracts; `AsyncAgentRuntime` awaits asynchronous contracts, supports concurrent independent runs, and applies explicit resilience policies around implementation calls. Neither runtime implicitly converts between execution modes.
 
 ### Tool
 
@@ -51,5 +51,5 @@ During the v0.x series, APIs may evolve as integrations reveal missing requireme
 - Autonomous execution loops
 - Vector memory and retrieval
 - Distributed execution
-- Async cancellation, timeout, and retry policies
+- Synchronous Runtime resilience policies
 - Multi-agent routing

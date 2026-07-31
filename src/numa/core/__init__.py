@@ -2,17 +2,20 @@
 
 from numa.core.exceptions import (
     AgentExecutionError,
+    AgentTimeoutError,
     ConfigurationError,
     MemoryError,
     NumaError,
     ToolExecutionError,
     ToolNotFoundError,
+    ToolTimeoutError,
     ToolValidationError,
 )
 from numa.core.models import Context, Message, MessageRole, Task, TaskStatus
 
 __all__ = [
     "AgentExecutionError",
+    "AgentTimeoutError",
     "ConfigurationError",
     "Context",
     "MemoryError",
@@ -23,5 +26,6 @@ __all__ = [
     "TaskStatus",
     "ToolExecutionError",
     "ToolNotFoundError",
+    "ToolTimeoutError",
     "ToolValidationError",
 ]

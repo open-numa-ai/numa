@@ -150,7 +150,24 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-The async runtime does not implicitly run synchronous components in threads. Cancellation, timeouts, and retry policies remain application concerns until dedicated runtime policies are introduced.
+The async runtime does not implicitly run synchronous components in threads. Configure bounded retries and a total deadline with `ResiliencePolicy`:
+
+```python
+from numa import AsyncAgentRuntime, ResiliencePolicy, RetryPolicy
+
+runtime = AsyncAgentRuntime(
+    resilience_policy=ResiliencePolicy(
+        timeout_seconds=30,
+        retry=RetryPolicy(
+            max_attempts=3,
+            delay_seconds=0.25,
+            retry_exceptions=(ConnectionError,),
+        ),
+    )
+)
+```
+
+External cancellation remains cooperative and propagates `asyncio.CancelledError`. See [Runtime Resilience Policies](runtime-policies.md) for deadline, retry, Tool override, and event semantics.
 
 ## Inspect Installed Plugins
 
