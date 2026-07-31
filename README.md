@@ -20,6 +20,7 @@ The initial release intentionally includes no LLM integration or complex plannin
 - Pydantic-backed tool input/output schemas and runtime validation
 - Entry-point discovery for third-party Agent and Tool plugins
 - SQLite-backed persistent memory for JSON-compatible values
+- Provider-neutral model request and response interfaces
 - Synchronous `AgentRuntime` with explicit task lifecycle handling
 - Framework-neutral `Task`, `Message`, and `Context` models
 - YAML, JSON, environment, and default configuration layers
@@ -85,6 +86,19 @@ with SQLiteMemory("numa-memory.db") as memory:
     print(runtime.memory.get("project"))
 ```
 
+Build Agents against a provider-neutral model boundary:
+
+```python
+from numa import Message, MessageRole, ModelRequest
+from numa.providers import EchoModelProvider
+
+provider = EchoModelProvider()
+response = provider.generate(
+    ModelRequest(messages=(Message(role=MessageRole.USER, content="Hello"),))
+)
+print(response.message.content)
+```
+
 See the [Quick Start guide](docs/quick-start.md) for configuration and development commands.
 
 ## Architecture
@@ -103,6 +117,7 @@ Numa depends on abstractions at its boundaries. Agents own task behavior, the ru
 
 See [Architecture](docs/architecture.md) for module responsibilities and extension points.
 See [Plugins](docs/plugins.md) to publish Agent and Tool extensions as separate packages.
+See [Model Providers](docs/model-providers.md) to implement optional vendor adapters.
 
 ## Development
 

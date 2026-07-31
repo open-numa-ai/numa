@@ -25,12 +25,14 @@ numa/
 ├── docs/
 │   ├── architecture.md
 │   ├── design.md
+│   ├── model-providers.md
 │   ├── plugins.md
 │   ├── quick-start.md
 │   └── vision.md
 ├── examples/
 │   ├── basic_agent.py
 │   ├── basic_tool.py
+│   ├── model_provider.py
 │   └── sqlite_memory.py
 ├── src/
 │   └── numa/
@@ -48,6 +50,10 @@ numa/
 │       │   └── sqlite.py
 │       ├── plugins/
 │       │   ├── discovery.py
+│       │   └── exceptions.py
+│       ├── providers/
+│       │   ├── base.py
+│       │   ├── echo.py
 │       │   └── exceptions.py
 │       ├── runtime/
 │       │   └── runtime.py
@@ -104,6 +110,12 @@ Discovers Agent and Tool factories from the `numa.agents` and `numa.tools` Entry
 
 Built-in components use the same lazy `Plugin` descriptor as third-party packages. Duplicate names fail discovery instead of silently replacing an implementation.
 
+### `providers`
+
+Defines the synchronous boundary between Agents and model vendor SDKs. `ModelRequest` carries messages, an optional model name, provider parameters, and application metadata. `ModelResponse` returns a framework `Message`, the resolved model, optional token usage, and provider metadata.
+
+Provider adapters own SDK-specific serialization, authentication, and exception conversion. The core contract does not implement retries, streaming, tool loops, or model selection policy. `EchoModelProvider` is a deterministic adapter for examples and tests, not a model integration.
+
 ### `config`
 
 Loads typed defaults, JSON or YAML files, then environment overrides. Configuration remains immutable after loading so execution behavior is predictable.
@@ -156,7 +168,7 @@ Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidation
 
 ## Extension Points
 
-- **Model integration:** implement an `Agent` that depends on a provider-specific client owned by the application.
+- **Model integration:** implement `ModelProvider` adapters in optional packages and inject them into application Agents.
 - **Persistent memory:** add specialized PostgreSQL, Redis, or vector retrieval contracts without expanding the minimal key-value interface prematurely.
 - **Tool ecosystem:** implement `Tool` adapters and add permission, isolation, retry, and telemetry policy around registration.
 - **Async runtime:** add an async agent contract and runtime without changing the synchronous API.
@@ -167,4 +179,4 @@ Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidation
 
 ## Current Boundaries
 
-The foundation does not include LLM calls, prompt templates, autonomous loops, persistent storage, networking, distributed execution, or multi-agent coordination. These omissions are intentional while v0.2 integration boundaries are developed incrementally.
+The foundation does not include vendor LLM adapters, prompt templates, autonomous loops, network services, distributed execution, or multi-agent coordination. These omissions are intentional while v0.2 integration boundaries are developed incrementally.
