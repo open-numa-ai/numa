@@ -76,11 +76,11 @@ def test_task_store_rejects_non_json_metadata() -> None:
 def test_sqlite_task_store_rejects_invalid_record(tmp_path: Path) -> None:
     database = tmp_path / "tasks.db"
     with SQLiteTaskStore(database) as store:
-        store._connection.execute(  # type: ignore[attr-defined]
+        store._connection.execute(
             "INSERT INTO tasks (id, updated_at, record) VALUES (?, ?, ?)",
             ("broken", "2026-01-01T00:00:00+00:00", "not-json"),
         )
-        store._connection.commit()  # type: ignore[attr-defined]
+        store._connection.commit()
 
         with pytest.raises(TaskPersistenceError, match="invalid or unsupported"):
             store.load("broken")

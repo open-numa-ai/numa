@@ -64,7 +64,7 @@ def decode_record(serialized: str) -> TaskRecord:
             error=cast(str | None, task_data["error"]),
         )
         messages = [
-            _decode_message(cast(dict[str, Any], message_data))
+            _decode_message(message_data)
             for message_data in cast(list[dict[str, Any]], context_data["messages"])
         ]
         return TaskRecord(
