@@ -3,8 +3,12 @@ from pathlib import Path
 from pytest import CaptureFixture, MonkeyPatch
 
 from numa.agents import Agent, EchoAgent
-from numa.cli import main
+from numa.cli import build_parser, main
 from numa.plugins import AGENT_PLUGIN_GROUP, Plugin
+
+
+def test_help_describes_numa_as_an_agent_runtime() -> None:
+    assert build_parser().description == "Numa provider-neutral runtime for agent applications"
 
 
 def test_init_creates_default_config(tmp_path: Path, capsys: CaptureFixture[str]) -> None:

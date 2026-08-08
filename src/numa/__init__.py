@@ -9,6 +9,7 @@ from numa.core import (
     TaskStatus,
     ToolPermissionDeniedError,
     ToolPermissionPolicyError,
+    WorkflowExecutionError,
 )
 from numa.events import (
     Event,
@@ -44,19 +45,42 @@ from numa.runtime import (
 )
 from numa.tasks import InMemoryTaskStore, SQLiteTaskStore, TaskRecord, TaskStore
 from numa.tools import AsyncAddTool, AsyncTool, Tool
+from numa.workflows import (
+    AgentStep,
+    AsyncAgentStep,
+    AsyncConditionalWorkflow,
+    AsyncParallelWorkflow,
+    AsyncSequentialWorkflow,
+    AsyncWorkflowNode,
+    ConditionalWorkflow,
+    SequentialWorkflow,
+    WorkflowCondition,
+    WorkflowNode,
+    WorkflowResult,
+    WorkflowState,
+    WorkflowStepResult,
+    WorkflowTaskFactory,
+)
 
 __all__ = [
     "Agent",
     "AgentInvocation",
     "AgentRuntime",
+    "AgentStep",
     "AllowAllToolPolicy",
     "AsyncAddTool",
     "AsyncAgent",
     "AsyncAgentRuntime",
+    "AsyncAgentStep",
+    "AsyncConditionalWorkflow",
     "AsyncEchoAgent",
+    "AsyncParallelWorkflow",
     "AsyncRuntimeMiddleware",
     "AsyncRuntimeNext",
+    "AsyncSequentialWorkflow",
     "AsyncTool",
+    "AsyncWorkflowNode",
+    "ConditionalWorkflow",
     "Context",
     "DenyAllToolPolicy",
     "Event",
@@ -79,6 +103,7 @@ __all__ = [
     "RuntimeMiddleware",
     "RuntimeNext",
     "SQLiteTaskStore",
+    "SequentialWorkflow",
     "Task",
     "TaskRecord",
     "TaskStatus",
@@ -92,6 +117,13 @@ __all__ = [
     "ToolPermissionPolicy",
     "ToolPermissionPolicyError",
     "ToolPermissionRequest",
+    "WorkflowCondition",
+    "WorkflowExecutionError",
+    "WorkflowNode",
+    "WorkflowResult",
+    "WorkflowState",
+    "WorkflowStepResult",
+    "WorkflowTaskFactory",
     "compose_async_middleware",
     "compose_middleware",
 ]

@@ -18,7 +18,10 @@ from numa.utils import configure_logging
 
 def build_parser() -> argparse.ArgumentParser:
     """Create the CLI argument parser."""
-    parser = argparse.ArgumentParser(prog="numa", description="Numa agent framework")
+    parser = argparse.ArgumentParser(
+        prog="numa",
+        description="Numa provider-neutral runtime for agent applications",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     init_parser = subparsers.add_parser("init", help="create a starter numa.yaml")

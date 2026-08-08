@@ -29,6 +29,7 @@ Numa is designed to be embedded beneath application-level agent logic. Applicati
 - Versioned Task snapshots with SQLite persistence and explicit resume
 - Ordered synchronous and asynchronous Runtime middleware composition
 - Explicit Tool allowlist, denylist, and custom permission policies
+- Sequential, conditional, and explicit asynchronous parallel workflow composition
 - Framework-neutral `Task`, `Message`, and `Context` models
 - YAML, JSON, environment, and default configuration layers
 - Standard-library logging with a unified Numa namespace
@@ -151,6 +152,28 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
+Compose Agent steps above the Runtime while preserving each child Task lifecycle:
+
+```python
+from numa import AgentRuntime, AgentStep, SequentialWorkflow, Task
+from numa.agents import EchoAgent
+
+workflow = SequentialWorkflow(
+    [
+        AgentStep(EchoAgent(), name="draft"),
+        AgentStep(
+            EchoAgent(),
+            name="review",
+            task_factory=lambda state: Task(
+                description=f"Review: {state.result('draft').message.content}"
+            ),
+        ),
+    ]
+)
+result = workflow.run(AgentRuntime(), Task(description="Write an update"))
+print(result.final_message.content if result.final_message else "no result")
+```
+
 See the [Quick Start guide](docs/quick-start.md) for configuration and development commands.
 
 ## Architecture
@@ -177,6 +200,7 @@ See [Runtime Resilience Policies](docs/runtime-policies.md) to configure async d
 See [Task Persistence and Resume](docs/task-persistence.md) for durable lifecycle recovery.
 See [Runtime Middleware](docs/runtime-middleware.md) to wrap Agent and Tool component calls.
 See [Tool Permission Policies](docs/tool-permissions.md) to authorize Runtime-managed Tool calls.
+See [Workflow Composition](docs/workflows.md) to compose sequential, conditional, and asynchronous parallel Agent steps.
 
 ## Development
 

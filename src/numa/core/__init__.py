@@ -15,6 +15,7 @@ from numa.core.exceptions import (
     ToolPermissionPolicyError,
     ToolTimeoutError,
     ToolValidationError,
+    WorkflowExecutionError,
 )
 from numa.core.models import Context, Message, MessageRole, Task, TaskStatus
 
@@ -38,4 +39,5 @@ __all__ = [
     "ToolPermissionPolicyError",
     "ToolTimeoutError",
     "ToolValidationError",
+    "WorkflowExecutionError",
 ]

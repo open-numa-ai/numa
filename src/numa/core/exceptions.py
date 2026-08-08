@@ -55,3 +55,7 @@ class TaskNotFoundError(NumaError):
 
 class TaskResumeError(NumaError):
     """Raised when a persisted Task cannot be resumed safely."""
+
+
+class WorkflowExecutionError(NumaError):
+    """Raised when workflow composition or one of its steps cannot complete."""
