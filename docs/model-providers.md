@@ -41,6 +41,40 @@ class VendorProvider(ModelProvider):
 
 Keep API keys and SDK clients inside the adapter or application composition root. Do not put credentials in `ModelRequest.metadata`.
 
+## Reference Agent
+
+`LLMAgent` is a small synchronous reference implementation that shows how to compose an `Agent`
+with any `ModelProvider`:
+
+```python
+from numa import AgentRuntime, Task
+from numa.agents import LLMAgent
+from numa.providers import EchoModelProvider
+
+agent = LLMAgent(
+    EchoModelProvider(),
+    system_prompt="Answer concisely.",
+    model="echo",
+    parameters={"temperature": 0},
+)
+result = AgentRuntime().run(agent, Task(description="Hello"))
+```
+
+For each run, the Agent sends messages in this order:
+
+1. The configured system prompt, when present.
+2. The existing `Context.messages` in their original order.
+3. A user message containing the current `Task.description`.
+
+The request metadata includes `execution_id=task.id`, which lets an
+`InstrumentedModelProvider` correlate Provider events with the surrounding Agent lifecycle. The
+Agent does not modify the input Context; `AgentRuntime` appends the returned assistant message after
+the Agent completes.
+
+This implementation performs exactly one synchronous Provider call. Applications remain
+responsible for prompt templates, history selection, structured outputs, Tool loops, retries, and
+vendor-specific configuration. Use a custom `Agent` when those policies differ.
+
 ## Error Semantics
 
 - Raise `ModelProviderConfigurationError` for missing credentials or invalid adapter configuration.
@@ -49,4 +83,6 @@ Keep API keys and SDK clients inside the adapter or application composition root
 
 ## Current Boundaries
 
-The v0.2 contract is synchronous and handles one complete response. Streaming, asynchronous calls, retries, fallback routing, structured output, and tool-call orchestration remain separate runtime concerns.
+The Provider contract and reference Agent are synchronous and handle one complete response.
+Streaming, asynchronous calls, retries, fallback routing, structured output, and tool-call
+orchestration remain separate concerns.
