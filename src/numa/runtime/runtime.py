@@ -26,6 +26,11 @@ from numa.runtime.middleware import (
     ToolInvocation,
     compose_middleware,
 )
+from numa.runtime.permissions import (
+    AllowAllToolPolicy,
+    ToolPermissionPolicy,
+    enforce_tool_permission,
+)
 from numa.runtime.task_persistence import load_task_for_resume, persist_task
 from numa.tasks import TaskStore
 from numa.tools import Tool
@@ -43,11 +48,15 @@ class AgentRuntime:
         event_bus: EventBus | None = None,
         task_store: TaskStore | None = None,
         middlewares: Iterable[RuntimeMiddleware] = (),
+        tool_permission_policy: ToolPermissionPolicy | None = None,
     ) -> None:
         self.memory = memory or InMemoryMemory()
         self.event_bus = event_bus or EventBus()
         self.task_store = task_store
         self._middlewares = tuple(middlewares)
+        self.tool_permission_policy = (
+            tool_permission_policy if tool_permission_policy is not None else AllowAllToolPolicy()
+        )
         self._tools: dict[str, Tool] = {}
 
     @property
@@ -87,12 +96,20 @@ class AgentRuntime:
             except ValidationError as exc:
                 raise ToolValidationError(f"Invalid input for tool {name!r}") from exc
 
+            normalized_arguments = validated_input.model_dump()
+            enforce_tool_permission(
+                self.tool_permission_policy,
+                execution_id=execution_id,
+                tool_name=name,
+                arguments=normalized_arguments,
+            )
+
             logger.info("Tool execution started", extra={"tool": name})
             try:
                 invocation = ToolInvocation(
                     execution_id=execution_id,
                     component_name=name,
-                    arguments=validated_input.model_dump(),
+                    arguments=normalized_arguments,
                 )
 
                 def execute(invocation: RuntimeInvocation) -> Any:

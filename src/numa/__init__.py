@@ -1,7 +1,15 @@
 """Public package interface for Numa."""
 
 from numa.agents import Agent, AsyncAgent, AsyncEchoAgent
-from numa.core import Context, Message, MessageRole, Task, TaskStatus
+from numa.core import (
+    Context,
+    Message,
+    MessageRole,
+    Task,
+    TaskStatus,
+    ToolPermissionDeniedError,
+    ToolPermissionPolicyError,
+)
 from numa.events import (
     Event,
     EventBus,
@@ -15,15 +23,22 @@ from numa.providers import ModelProvider, ModelRequest, ModelResponse, ModelUsag
 from numa.runtime import (
     AgentInvocation,
     AgentRuntime,
+    AllowAllToolPolicy,
     AsyncAgentRuntime,
     AsyncRuntimeMiddleware,
     AsyncRuntimeNext,
+    DenyAllToolPolicy,
     ResiliencePolicy,
     RetryPolicy,
     RuntimeInvocation,
     RuntimeMiddleware,
     RuntimeNext,
+    ToolAllowlistPolicy,
+    ToolDenylistPolicy,
     ToolInvocation,
+    ToolPermissionDecision,
+    ToolPermissionPolicy,
+    ToolPermissionRequest,
     compose_async_middleware,
     compose_middleware,
 )
@@ -34,6 +49,7 @@ __all__ = [
     "Agent",
     "AgentInvocation",
     "AgentRuntime",
+    "AllowAllToolPolicy",
     "AsyncAddTool",
     "AsyncAgent",
     "AsyncAgentRuntime",
@@ -42,6 +58,7 @@ __all__ = [
     "AsyncRuntimeNext",
     "AsyncTool",
     "Context",
+    "DenyAllToolPolicy",
     "Event",
     "EventBus",
     "EventHandler",
@@ -67,7 +84,14 @@ __all__ = [
     "TaskStatus",
     "TaskStore",
     "Tool",
+    "ToolAllowlistPolicy",
+    "ToolDenylistPolicy",
     "ToolInvocation",
+    "ToolPermissionDecision",
+    "ToolPermissionDeniedError",
+    "ToolPermissionPolicy",
+    "ToolPermissionPolicyError",
+    "ToolPermissionRequest",
     "compose_async_middleware",
     "compose_middleware",
 ]

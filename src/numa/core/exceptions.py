@@ -33,6 +33,14 @@ class ToolValidationError(NumaError):
     """Raised when tool input or output violates its declared schema."""
 
 
+class ToolPermissionPolicyError(NumaError):
+    """Raised when a Tool permission policy cannot produce a valid decision."""
+
+
+class ToolPermissionDeniedError(ToolPermissionPolicyError):
+    """Raised when a Tool permission policy explicitly denies execution."""
+
+
 class MemoryError(NumaError):
     """Raised when a memory operation fails."""
 

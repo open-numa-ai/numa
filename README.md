@@ -27,6 +27,7 @@ The initial release intentionally includes no LLM integration or complex plannin
 - Explicit async timeout, cancellation, and bounded retry policies
 - Versioned Task snapshots with SQLite persistence and explicit resume
 - Ordered synchronous and asynchronous Runtime middleware composition
+- Explicit Tool allowlist, denylist, and custom permission policies
 - Framework-neutral `Task`, `Message`, and `Context` models
 - YAML, JSON, environment, and default configuration layers
 - Standard-library logging with a unified Numa namespace
@@ -162,6 +163,7 @@ See [Structured Events](docs/events.md) to integrate observability handlers.
 See [Runtime Resilience Policies](docs/runtime-policies.md) to configure async deadlines and retries.
 See [Task Persistence and Resume](docs/task-persistence.md) for durable lifecycle recovery.
 See [Runtime Middleware](docs/runtime-middleware.md) to wrap Agent and Tool component calls.
+See [Tool Permission Policies](docs/tool-permissions.md) to authorize Runtime-managed Tool calls.
 
 ## Development
 

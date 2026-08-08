@@ -31,7 +31,7 @@ Goal: support larger and concurrent workloads without changing core semantics.
 - [x] Cancellation, timeout, and retry policies
 - [x] Task persistence and resumability
 - [x] Runtime middleware
-- [ ] Security and tool permission policies
+- [x] Security and tool permission policies
 
 ## Future
 

@@ -85,9 +85,10 @@ event, and exception semantics as raising from the wrapped component.
 
 ## Runtime Boundaries
 
-- Tool lookup and input validation happen before middleware. Tool output validation happens after
-  the complete chain, including short-circuit results. Middleware that rewrites normalized Tool
-  arguments is responsible for preserving the Tool's declared input contract.
+- Tool lookup, input validation, and permission evaluation happen before middleware. Tool output
+  validation happens after the complete chain, including short-circuit results. Middleware that
+  rewrites normalized Tool arguments is responsible for preserving the Tool's declared input
+  contract. Permission policies therefore authorize the pre-middleware normalized arguments.
 - Async middleware runs once per public Runtime call. Resilience retries wrap only the terminal
   Agent or Tool implementation, so middleware side effects are not repeated for each attempt.
 - Middleware executes inside Agent and Tool lifecycle events. Its execution ID therefore matches
