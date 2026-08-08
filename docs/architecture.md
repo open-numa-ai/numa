@@ -119,7 +119,7 @@ Defines structured Agent, Tool, and Provider lifecycle events, including explici
 
 ### `runtime`
 
-Coordinates Agent and Tool invocations. `AgentRuntime` executes synchronous components; `AsyncAgentRuntime` awaits asynchronous components, can gather independent Agent runs concurrently, and applies immutable timeout and retry policies. Both change task state, record results, optionally persist lifecycle snapshots, validate Tool boundaries, emit structured events, log lifecycle transitions, and convert implementation failures into framework exceptions.
+Coordinates Agent and Tool invocations. `AgentRuntime` executes synchronous components; `AsyncAgentRuntime` awaits asynchronous components, can gather independent Agent runs concurrently, and applies immutable timeout and retry policies. Both compose ordered middleware, change task state, record results, optionally persist lifecycle snapshots, validate Tool boundaries, emit structured events, log lifecycle transitions, and convert implementation failures into framework exceptions.
 
 Async policy timeouts cover all attempts and backoff delays. External cancellation is never retried or wrapped. Schema validation and Tool lookup remain outside the retry boundary.
 
@@ -185,6 +185,11 @@ sequenceDiagram
 
 If an agent raises, the runtime marks the task failed, records the original error text, logs the exception, and raises `AgentExecutionError` with the original exception as its cause.
 
+Ordered Runtime middleware wraps the Agent component call inside this lifecycle. Middleware may
+inspect the invocation, enrich Context, transform a result, or short-circuit execution while task
+state, persistence, and events remain owned by the Runtime. See
+[Runtime Middleware](runtime-middleware.md) for the synchronous and asynchronous contracts.
+
 ## Tool Execution Flow
 
 ```mermaid
@@ -203,13 +208,16 @@ sequenceDiagram
 
 Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidationError`, and implementation failures raise `ToolExecutionError`. Wrapped failures retain their original exception as `__cause__`.
 
+Tool middleware receives normalized arguments after input validation. The complete middleware result
+is subject to optional output validation before the Runtime emits a completion event.
+
 ## Extension Points
 
 - **Model integration:** implement `ModelProvider` adapters in optional packages and inject them into application Agents.
 - **Persistent memory:** add specialized PostgreSQL, Redis, or vector retrieval contracts without expanding the minimal key-value interface prematurely.
 - **Task persistence:** add distributed stores, leases, history, and worker coordination without changing the local snapshot contract.
 - **Tool ecosystem:** implement `Tool` adapters and add permission, isolation, retry, and telemetry policy around registration.
-- **Runtime policies:** add middleware composition and specialized policies without changing synchronous APIs or hiding blocking work in the event loop.
+- **Runtime policies:** add specialized middleware policies without changing synchronous APIs or hiding blocking work in the event loop.
 - **Planning:** compose tasks above `AgentRuntime`; do not embed planning policy into the base runtime.
 - **Multi-agent collaboration:** add routing and message transport as a higher orchestration layer.
 - **Observability:** attach logging handlers or implement `EventHandler` adapters for metrics, tracing, audit, and OpenTelemetry backends.

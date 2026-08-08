@@ -40,6 +40,10 @@ result = await runtime.execute_tool_with_policy("fetch", policy, url=url)
 
 Input validation, Tool lookup, and output validation occur once and are not retried. Only the asynchronous Agent or Tool implementation call is retried.
 
+Runtime middleware also executes once per public call and wraps the complete resilience operation.
+Retries therefore do not repeat middleware side effects. See [Runtime Middleware](runtime-middleware.md)
+for ordering and short-circuit behavior.
+
 ## Timeout and Cancellation
 
 An Agent deadline raises `AgentTimeoutError`, marks its Task as `FAILED`, and emits `agent.failed`. A Tool deadline raises `ToolTimeoutError` and emits `tool.failed`.

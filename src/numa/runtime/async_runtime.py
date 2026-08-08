@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable, Callable
-from typing import Any, TypeVar
+from collections.abc import Awaitable, Callable, Iterable
+from typing import Any, TypeVar, cast
 from uuid import uuid4
 
 from pydantic import ValidationError
@@ -24,6 +24,13 @@ from numa.core import (
 )
 from numa.events import Event, EventBus, EventType
 from numa.memory import InMemoryMemory, Memory
+from numa.runtime.middleware import (
+    AgentInvocation,
+    AsyncRuntimeMiddleware,
+    RuntimeInvocation,
+    ToolInvocation,
+    compose_async_middleware,
+)
 from numa.runtime.policies import ResiliencePolicy
 from numa.runtime.task_persistence import load_task_for_resume, persist_task
 from numa.tasks import TaskStore
@@ -48,12 +55,23 @@ class AsyncAgentRuntime:
         event_bus: EventBus | None = None,
         resilience_policy: ResiliencePolicy | None = None,
         task_store: TaskStore | None = None,
+        middlewares: Iterable[AsyncRuntimeMiddleware] = (),
     ) -> None:
         self.memory = memory or InMemoryMemory()
         self.event_bus = event_bus or EventBus()
         self.resilience_policy = resilience_policy or ResiliencePolicy()
         self.task_store = task_store
+        self._middlewares = tuple(middlewares)
         self._tools: dict[str, AsyncTool] = {}
+
+    @property
+    def middlewares(self) -> tuple[AsyncRuntimeMiddleware, ...]:
+        """Return middleware in outermost-to-innermost execution order."""
+        return self._middlewares
+
+    def add_middleware(self, middleware: AsyncRuntimeMiddleware) -> None:
+        """Append middleware as the innermost wrapper for future calls."""
+        self._middlewares += (middleware,)
 
     def register_tool(self, tool: AsyncTool) -> None:
         """Register or replace an asynchronous Tool by its stable name."""
@@ -98,11 +116,22 @@ class AsyncAgentRuntime:
 
             logger.info("Async Tool execution started", extra={"tool": name})
             try:
-                result = await self._execute_with_policy(
-                    lambda: tool.execute(**validated_input.model_dump()),
-                    resilience_policy,
+                invocation = ToolInvocation(
+                    execution_id=execution_id,
                     component_name=name,
+                    arguments=validated_input.model_dump(),
                 )
+
+                async def execute(invocation: RuntimeInvocation) -> Any:
+                    if not isinstance(invocation, ToolInvocation):
+                        raise TypeError("Tool middleware must forward a ToolInvocation")
+                    return await self._execute_with_policy(
+                        lambda: tool.execute(**invocation.arguments),
+                        resilience_policy,
+                        component_name=name,
+                    )
+
+                result = await compose_async_middleware(self._middlewares, execute)(invocation)
             except asyncio.CancelledError:
                 logger.info("Async Tool execution cancelled", extra={"tool": name})
                 self.event_bus.emit(
@@ -171,10 +200,25 @@ class AsyncAgentRuntime:
         logger.info("Async Agent task started", extra={"agent": agent.name, "task_id": task.id})
 
         try:
-            result = await self._execute_with_policy(
-                lambda: agent.run(task, execution_context),
-                resilience_policy or self.resilience_policy,
+            invocation = AgentInvocation(
+                execution_id=task.id,
                 component_name=agent.name,
+                task=task,
+                context=execution_context,
+            )
+
+            async def execute(invocation: RuntimeInvocation) -> Message:
+                if not isinstance(invocation, AgentInvocation):
+                    raise TypeError("Agent middleware must forward an AgentInvocation")
+                return await self._execute_with_policy(
+                    lambda: agent.run(invocation.task, invocation.context),
+                    resilience_policy or self.resilience_policy,
+                    component_name=agent.name,
+                )
+
+            result = cast(
+                Message,
+                await compose_async_middleware(self._middlewares, execute)(invocation),
             )
         except asyncio.CancelledError:
             task.status = TaskStatus.CANCELLED
