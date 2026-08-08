@@ -29,7 +29,7 @@ Goal: support larger and concurrent workloads without changing core semantics.
 
 - [x] Async agent and tool contracts
 - [x] Cancellation, timeout, and retry policies
-- [ ] Task persistence and resumability
+- [x] Task persistence and resumability
 - [ ] Runtime middleware
 - [ ] Security and tool permission policies
 

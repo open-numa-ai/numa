@@ -35,3 +35,15 @@ class ToolValidationError(NumaError):
 
 class MemoryError(NumaError):
     """Raised when a memory operation fails."""
+
+
+class TaskPersistenceError(NumaError):
+    """Raised when a Task snapshot cannot be stored or loaded."""
+
+
+class TaskNotFoundError(NumaError):
+    """Raised when a persisted Task cannot be found."""
+
+
+class TaskResumeError(NumaError):
+    """Raised when a persisted Task cannot be resumed safely."""

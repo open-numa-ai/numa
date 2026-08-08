@@ -18,7 +18,7 @@ Receives a `Task` and `Context`, then returns a `Message`. `Agent` and `AsyncAge
 
 ### Runtime
 
-Owns execution lifecycle, dependency access, logging, and error conversion. `AgentRuntime` executes synchronous contracts; `AsyncAgentRuntime` awaits asynchronous contracts, supports concurrent independent runs, and applies explicit resilience policies around implementation calls. Neither runtime implicitly converts between execution modes.
+Owns execution lifecycle, dependency access, logging, persistence, and error conversion. `AgentRuntime` executes synchronous contracts; `AsyncAgentRuntime` awaits asynchronous contracts, supports concurrent independent runs, and applies explicit resilience policies around implementation calls. Optional Task Stores capture lifecycle snapshots for explicit replay. Neither runtime implicitly converts between execution modes.
 
 ### Tool
 
@@ -27,6 +27,10 @@ Exposes a named synchronous or asynchronous capability with shared Pydantic inpu
 ### Memory
 
 Defines basic storage behavior independently of a database. The SQLite adapter provides JSON persistence while search, vector retrieval, and transactional interfaces remain specialized future contracts.
+
+### Task Store
+
+Persists versioned Task and Context snapshots independently of Agent memory. Resume replays unfinished Agent invocations and does not promise stack restoration or exactly-once side effects.
 
 ### Model Provider
 
@@ -52,4 +56,5 @@ During the v0.x series, APIs may evolve as integrations reveal missing requireme
 - Vector memory and retrieval
 - Distributed execution
 - Synchronous Runtime resilience policies
+- Distributed Task leases and exactly-once execution
 - Multi-agent routing
