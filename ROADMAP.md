@@ -1,6 +1,6 @@
 # Roadmap
 
-Numa evolves from stable framework contracts toward production runtime capabilities. Roadmap items describe direction, not release guarantees.
+Numa evolves from small framework contracts toward a more capable embeddable runtime. The version labels below group capabilities; they do not correspond to published package versions, release dates, or production-readiness guarantees.
 
 ## v0.1: Project Foundation
 
@@ -25,7 +25,7 @@ Goal: validate contracts through real but optional adapters.
 
 ## v0.3: Runtime Evolution
 
-Goal: support larger and concurrent workloads without changing core semantics.
+Goal: make local execution more durable and composable without changing core semantics.
 
 - [x] Async agent and tool contracts
 - [x] Cancellation, timeout, and retry policies
@@ -33,7 +33,9 @@ Goal: support larger and concurrent workloads without changing core semantics.
 - [x] Runtime middleware
 - [x] Security and tool permission policies
 
-## Future
+## Possible Future Directions
+
+These items are areas to validate through real integrations, not committed features:
 
 - Planning and workflow composition
 - Multi-agent routing and collaboration

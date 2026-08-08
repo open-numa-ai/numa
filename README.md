@@ -4,15 +4,15 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
 
-Numa is a modular Python framework for building intelligent agent systems. It provides small, explicit abstractions for agents, task execution, tools, memory, context, configuration, and future multi-agent coordination.
+Numa is a small, provider-neutral Python runtime foundation for embedding agent components in applications. It provides explicit contracts for agents, tasks, tools, memory, context, and execution lifecycle without choosing an LLM vendor or agent strategy for the application.
 
-> **Project status:** v0.2 integration boundaries are feature-complete and v0.3 runtime evolution is in progress. The public APIs may evolve before the first stable release.
+> **Project status:** Numa is pre-alpha. Roadmap versions group capabilities; they are not published package versions or production-readiness guarantees. Public APIs may evolve before the first stable release.
 
 ## Why Numa?
 
-Agent applications often couple model providers, orchestration, state, and tools into one implementation. Numa keeps these responsibilities separate so applications can replace infrastructure without rewriting agent behavior.
+Agent applications often couple model providers, execution lifecycle, state, and tools into one implementation. Numa keeps these responsibilities separate so applications can replace infrastructure without rewriting agent behavior.
 
-The initial release intentionally includes no LLM integration or complex planning algorithm.
+Numa is designed to be embedded beneath application-level agent logic. Applications and optional packages own prompts, planning, model SDK integration, autonomous loops, and deployment. Numa owns narrow component contracts and predictable local execution around them.
 
 ## Features
 
@@ -154,7 +154,7 @@ Task + Context ---- Memory
 Task Store (optional)
 ```
 
-Numa depends on abstractions at its boundaries. Agents own task behavior, the runtime owns execution lifecycle, tools expose capabilities, and memory adapters own persistence.
+Numa depends on abstractions at its boundaries. Applications compose the system, Agents own task behavior, the Runtime owns execution lifecycle, Tools expose capabilities, and adapters own model and storage integration.
 
 See [Architecture](docs/architecture.md) for module responsibilities and extension points.
 See [Plugins](docs/plugins.md) to publish Agent and Tool extensions as separate packages.
@@ -178,7 +178,7 @@ Read [Contributing](CONTRIBUTING.md) before opening an issue or pull request.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for planned runtime, plugin, asynchronous, persistence, and multi-agent capabilities.
+See [ROADMAP.md](ROADMAP.md) for completed capability groups and possible future directions.
 
 ## License
 
