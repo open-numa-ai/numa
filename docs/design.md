@@ -18,11 +18,11 @@ Receives a `Task` and `Context`, then returns a `Message`. `Agent` and `AsyncAge
 
 ### Runtime
 
-Owns execution lifecycle, dependency access, logging, persistence, and error conversion. `AgentRuntime` executes synchronous contracts; `AsyncAgentRuntime` awaits asynchronous contracts, supports concurrent independent runs, and applies explicit resilience policies around implementation calls. Optional Task Stores capture lifecycle snapshots for explicit replay. Neither runtime implicitly converts between execution modes.
+Owns execution lifecycle, dependency access, logging, persistence, permission enforcement, and error conversion. `AgentRuntime` executes synchronous contracts; `AsyncAgentRuntime` awaits asynchronous contracts, supports concurrent independent runs, and applies explicit resilience policies around implementation calls. Optional Task Stores capture lifecycle snapshots for explicit replay. Neither runtime implicitly converts between execution modes.
 
 ### Tool
 
-Exposes a named synchronous or asynchronous capability with shared Pydantic input and optional output schemas. Future layers can add authorization, isolation, retries, and telemetry without expanding the base contract prematurely.
+Exposes a named synchronous or asynchronous capability with shared Pydantic input and optional output schemas. Runtime permission policies authorize normalized Tool calls without expanding the base Tool contract. Isolation, retries, and telemetry remain separate concerns.
 
 ### Memory
 

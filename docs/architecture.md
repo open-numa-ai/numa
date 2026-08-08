@@ -12,6 +12,7 @@ Numa establishes small interfaces, optional integration boundaries, and parallel
 6. **Make resilience policy explicit.** Async timeout and retry behavior is immutable, bounded, and opt-in; cancellation always remains visible to callers.
 7. **Persist snapshots, not execution stacks.** Task Stores capture versioned Task and Context state; resume replays unfinished Agent calls with stable identities.
 8. **Use focused dependencies.** Logging and CLI behavior build on `logging` and `argparse`; PyYAML handles configuration files and Pydantic defines tool boundaries.
+9. **Authorize at the Runtime boundary.** Tool permission policies inspect normalized arguments before middleware or implementation code and fail closed on invalid decisions.
 
 ## Repository Tree
 
@@ -33,6 +34,7 @@ numa/
 │   ├── quick-start.md
 │   ├── runtime-policies.md
 │   ├── task-persistence.md
+│   ├── tool-permissions.md
 │   └── vision.md
 ├── examples/
 │   ├── async_runtime.py
@@ -72,6 +74,7 @@ numa/
 │       │   └── exceptions.py
 │       ├── runtime/
 │       │   ├── async_runtime.py
+│       │   ├── permissions.py
 │       │   ├── policies.py
 │       │   ├── task_persistence.py
 │       │   └── runtime.py
@@ -119,7 +122,7 @@ Defines structured Agent, Tool, and Provider lifecycle events, including explici
 
 ### `runtime`
 
-Coordinates Agent and Tool invocations. `AgentRuntime` executes synchronous components; `AsyncAgentRuntime` awaits asynchronous components, can gather independent Agent runs concurrently, and applies immutable timeout and retry policies. Both compose ordered middleware, change task state, record results, optionally persist lifecycle snapshots, validate Tool boundaries, emit structured events, log lifecycle transitions, and convert implementation failures into framework exceptions.
+Coordinates Agent and Tool invocations. `AgentRuntime` executes synchronous components; `AsyncAgentRuntime` awaits asynchronous components, can gather independent Agent runs concurrently, and applies immutable timeout and retry policies. Both enforce Tool permissions, compose ordered middleware, change task state, record results, optionally persist lifecycle snapshots, validate Tool boundaries, emit structured events, log lifecycle transitions, and convert implementation failures into framework exceptions.
 
 Async policy timeouts cover all attempts and backoff delays. External cancellation is never retried or wrapped. Schema validation and Tool lookup remain outside the retry boundary.
 
@@ -200,23 +203,25 @@ sequenceDiagram
 
   App->>Runtime: execute_tool(name, arguments)
   Runtime->>Runtime: resolve and validate input
+  Runtime->>Runtime: evaluate permission policy
   Runtime->>Tool: execute(normalized arguments)
   Tool-->>Runtime: result
   Runtime->>Runtime: validate optional output
   Runtime-->>App: normalized result
 ```
 
-Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidationError`, and implementation failures raise `ToolExecutionError`. Wrapped failures retain their original exception as `__cause__`.
+Unknown names raise `ToolNotFoundError`, schema violations raise `ToolValidationError`, permission denials raise `ToolPermissionDeniedError`, and implementation failures raise `ToolExecutionError`. Wrapped failures retain their original exception as `__cause__`.
 
-Tool middleware receives normalized arguments after input validation. The complete middleware result
-is subject to optional output validation before the Runtime emits a completion event.
+Tool permission policies receive a read-only view of normalized arguments after input validation.
+Allowed calls then enter Tool middleware. The complete middleware result is subject to optional
+output validation before the Runtime emits a completion event.
 
 ## Extension Points
 
 - **Model integration:** implement `ModelProvider` adapters in optional packages and inject them into application Agents.
 - **Persistent memory:** add specialized PostgreSQL, Redis, or vector retrieval contracts without expanding the minimal key-value interface prematurely.
 - **Task persistence:** add distributed stores, leases, history, and worker coordination without changing the local snapshot contract.
-- **Tool ecosystem:** implement `Tool` adapters and add permission, isolation, retry, and telemetry policy around registration.
+- **Tool ecosystem:** implement `Tool` adapters and add isolation, retry, and telemetry policy around registration. Runtime permission policies authorize calls without promising process isolation.
 - **Runtime policies:** add specialized middleware policies without changing synchronous APIs or hiding blocking work in the event loop.
 - **Planning:** compose tasks above `AgentRuntime`; do not embed planning policy into the base runtime.
 - **Multi-agent collaboration:** add routing and message transport as a higher orchestration layer.

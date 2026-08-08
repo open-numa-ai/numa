@@ -11,6 +11,8 @@ from numa.core.exceptions import (
     TaskResumeError,
     ToolExecutionError,
     ToolNotFoundError,
+    ToolPermissionDeniedError,
+    ToolPermissionPolicyError,
     ToolTimeoutError,
     ToolValidationError,
 )
@@ -32,6 +34,8 @@ __all__ = [
     "TaskStatus",
     "ToolExecutionError",
     "ToolNotFoundError",
+    "ToolPermissionDeniedError",
+    "ToolPermissionPolicyError",
     "ToolTimeoutError",
     "ToolValidationError",
 ]
