@@ -10,7 +10,7 @@ def main() -> None:
     database = Path("numa-memory.db")
 
     with SQLiteMemory(database) as memory:
-        memory.set("project", {"name": "Numa", "phase": "v0.2"})
+        memory.set("project", {"name": "Numa", "scope": "local-runtime"})
         print(memory.get("project"))
 
 

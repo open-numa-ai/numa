@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Numa Contributors" }]
-keywords = ["ai", "agents", "framework", "memory", "tools"]
+keywords = ["ai", "agents", "orchestration", "runtime", "tools"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",

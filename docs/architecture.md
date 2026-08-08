@@ -13,6 +13,7 @@ Numa establishes small interfaces, optional integration boundaries, and parallel
 7. **Persist snapshots, not execution stacks.** Task Stores capture versioned Task and Context state; resume replays unfinished Agent calls with stable identities.
 8. **Use focused dependencies.** Logging and CLI behavior build on `logging` and `argparse`; PyYAML handles configuration files and Pydantic defines tool boundaries.
 9. **Authorize at the Runtime boundary.** Tool permission policies inspect normalized arguments before middleware or implementation code and fail closed on invalid decisions.
+10. **Compose above the Runtime.** Workflow nodes delegate every Agent step to a Runtime instead of duplicating component lifecycle, policy, event, or persistence behavior.
 
 ## Repository Tree
 
@@ -35,9 +36,11 @@ numa/
 │   ├── runtime-policies.md
 │   ├── task-persistence.md
 │   ├── tool-permissions.md
+│   ├── workflows.md
 │   └── vision.md
 ├── examples/
 │   ├── async_runtime.py
+│   ├── async_workflow_composition.py
 │   ├── basic_agent.py
 │   ├── basic_tool.py
 │   ├── llm_reference_agent.py
@@ -45,7 +48,8 @@ numa/
 │   ├── runtime_resilience.py
 │   ├── structured_events.py
 │   ├── sqlite_memory.py
-│   └── task_resume.py
+│   ├── task_resume.py
+│   └── workflow_composition.py
 ├── src/
 │   └── numa/
 │       ├── agents/
@@ -92,6 +96,10 @@ numa/
 │       │   └── base.py
 │       ├── utils/
 │       │   └── logging.py
+│       ├── workflows/
+│       │   ├── async_workflow.py
+│       │   ├── base.py
+│       │   └── sync.py
 │       ├── cli.py
 │       └── py.typed
 ├── tests/
@@ -169,6 +177,12 @@ Provider.
 
 Loads typed defaults, JSON or YAML files, then environment overrides. Configuration remains immutable after loading so execution behavior is predictable.
 
+### `workflows`
+
+Composes named Agent steps above `AgentRuntime` and `AsyncAgentRuntime`. Sequence nodes share an ordered Context, conditions inspect completed step results, and asynchronous parallel nodes isolate branch Contexts before merging messages and results in declaration order. Every Agent step still receives its own Runtime-managed child Task.
+
+The root workflow Task records aggregate completion, failure, or cancellation but is not persisted by a Runtime. Parallel branch metadata mutations remain isolated; branch messages and named results are the defined merge outputs. Workflow nodes do not infer tasks, retry completed steps, compensate side effects, or route between remote workers.
+
 ### `utils`
 
 Contains narrow shared infrastructure. The logging helper configures only the `numa` namespace, preserving control for embedding applications.
@@ -232,7 +246,7 @@ output validation before the Runtime emits a completion event.
 - **Task persistence:** add distributed stores, leases, history, and worker coordination without changing the local snapshot contract.
 - **Tool ecosystem:** implement `Tool` adapters and add isolation, retry, and telemetry policy around registration. Runtime permission policies authorize calls without promising process isolation.
 - **Runtime policies:** add specialized middleware policies without changing synchronous APIs or hiding blocking work in the event loop.
-- **Planning:** compose tasks above `AgentRuntime`; do not embed planning policy into the base runtime.
+- **Planning:** build explicit or dynamic planning policy on top of workflow nodes; do not embed planning policy into the base Runtime.
 - **Multi-agent collaboration:** add routing and message transport as a higher orchestration layer.
 - **Observability:** attach logging handlers or implement `EventHandler` adapters for metrics, tracing, audit, and OpenTelemetry backends.
 - **Plugins:** add compatibility metadata, version constraints, and optional plugin diagnostics without importing components during listing.

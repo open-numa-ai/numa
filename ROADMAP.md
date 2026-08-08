@@ -33,11 +33,19 @@ Goal: make local execution more durable and composable without changing core sem
 - [x] Runtime middleware
 - [x] Security and tool permission policies
 
+## v0.4: Application Composition
+
+Goal: compose explicit local Agent execution without embedding planning strategy in the Runtime.
+
+- [x] Sequential Agent workflows with shared Context
+- [x] Conditional workflow branches over completed results
+- [x] Structured asynchronous parallel branches
+- [x] Deterministic named step results and child Task correlation
+
 ## Possible Future Directions
 
 These items are areas to validate through real integrations, not committed features:
 
-- Planning and workflow composition
 - Multi-agent routing and collaboration
 - Distributed runtime adapters
 - Evaluation and observability integrations

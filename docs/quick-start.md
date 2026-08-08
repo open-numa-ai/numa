@@ -1,6 +1,6 @@
 # Quick Start
 
-This guide runs Numa's current framework foundation without an LLM provider.
+This guide runs Numa's provider-neutral runtime foundation without a vendor LLM SDK.
 
 ## Requirements
 
@@ -52,7 +52,7 @@ Supported environment variables:
 uv run numa run example_agent --task "Hello, Numa"
 ```
 
-The example agent echoes the task through `AgentRuntime`. It validates the framework lifecycle without performing model inference.
+The example agent echoes the task through `AgentRuntime`. It validates the Runtime lifecycle without performing model inference.
 
 ## Use the Python API
 
@@ -122,7 +122,7 @@ result = runtime.execute_tool("multiply", left=6, right=7)
 print(result)
 ```
 
-Use `tool.input_schema` and `tool.output_schema` when another system needs JSON Schema. Calls through `AgentRuntime.execute_tool()` validate both boundaries. Direct `Tool.execute()` calls intentionally bypass framework validation.
+Use `tool.input_schema` and `tool.output_schema` when another system needs JSON Schema. Calls through `AgentRuntime.execute_tool()` validate both boundaries. Direct `Tool.execute()` calls intentionally bypass Runtime validation.
 
 ## Run Asynchronous Components
 
@@ -259,7 +259,7 @@ for event in collector.events:
     print(event.type.value, event.execution_id)
 ```
 
-Use `InstrumentedModelProvider` to observe a Provider without changing its implementation. Handler failures are logged and do not interrupt framework execution. See [Structured Events](events.md) for event fields, correlation, privacy, and custom handlers.
+Use `InstrumentedModelProvider` to observe a Provider without changing its implementation. Handler failures are logged and do not interrupt Numa execution. See [Structured Events](events.md) for event fields, correlation, privacy, and custom handlers.
 
 ## Quality Checks
 

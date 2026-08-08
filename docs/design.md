@@ -40,6 +40,10 @@ Translates provider-neutral requests and responses at vendor SDK boundaries. Age
 
 Expose synchronous lifecycle hooks without coupling producers to observability vendors. Event handlers are failure-isolated and built-in events avoid request or response payloads.
 
+### Workflows
+
+Compose explicit Agent steps above the Runtime. Synchronous workflows provide sequence and condition nodes; asynchronous workflows additionally provide structured parallel branches. Workflows choose execution structure but do not implement task planning, prompt policy, or multi-agent routing.
+
 ### Configuration
 
 Loads immutable settings with deterministic precedence. Secrets should enter through environment variables or an external secret manager, not committed files.
@@ -51,7 +55,7 @@ During the v0.x series, APIs may evolve as integrations reveal missing requireme
 ## Current Non-Goals
 
 - Bundled vendor LLM adapters
-- Prompt or planning frameworks
+- Prompt or autonomous planning frameworks
 - Autonomous execution loops
 - Vector memory and retrieval
 - Distributed execution

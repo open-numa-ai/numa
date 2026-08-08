@@ -72,4 +72,4 @@ Numa reports explicit errors for:
 
 ## Security
 
-Python plugins execute in the host process with the application's permissions. Install only trusted plugin packages. Sandboxing and tool permission policies are separate roadmap items and are not provided by Entry Point discovery.
+Python plugins execute in the host process with the application's permissions. Install only trusted plugin packages. Runtime Tool permission policies can authorize calls to a loaded Tool, but they do not sandbox plugin imports, factories, or implementation code.
