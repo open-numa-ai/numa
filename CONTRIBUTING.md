@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to Numa!
 
-Numa is an early-stage open-source framework for modular agent systems. We welcome contributions from developers, researchers, designers, writers, and AI practitioners.
+Numa is an early-stage, provider-neutral Python runtime foundation for agent applications. We welcome contributions from developers, researchers, designers, writers, and AI practitioners.
 
 ## Ways to Contribute
 
