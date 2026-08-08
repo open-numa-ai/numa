@@ -21,6 +21,7 @@ Numa is designed to be embedded beneath application-level agent logic. Applicati
 - Entry-point discovery for third-party Agent and Tool plugins
 - SQLite-backed persistent memory for JSON-compatible values
 - Provider-neutral model request and response interfaces
+- Provider-backed synchronous `LLMAgent` reference implementation
 - Structured Agent, Tool, and Provider lifecycle events
 - Synchronous `AgentRuntime` with explicit task lifecycle handling
 - Parallel `AsyncAgent`, `AsyncTool`, and `AsyncAgentRuntime` contracts
@@ -103,6 +104,18 @@ response = provider.generate(
     ModelRequest(messages=(Message(role=MessageRole.USER, content="Hello"),))
 )
 print(response.message.content)
+```
+
+Compose the same provider boundary with the reference Agent and Runtime:
+
+```python
+from numa import AgentRuntime, Task
+from numa.agents import LLMAgent
+from numa.providers import EchoModelProvider
+
+agent = LLMAgent(EchoModelProvider(), system_prompt="Be concise.")
+result = AgentRuntime().run(agent, Task(description="Hello"))
+print(result.content)
 ```
 
 Collect structured lifecycle events:

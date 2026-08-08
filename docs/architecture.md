@@ -40,6 +40,7 @@ numa/
 │   ├── async_runtime.py
 │   ├── basic_agent.py
 │   ├── basic_tool.py
+│   ├── llm_reference_agent.py
 │   ├── model_provider.py
 │   ├── runtime_resilience.py
 │   ├── structured_events.py
@@ -51,7 +52,8 @@ numa/
 │       │   ├── async_base.py
 │       │   ├── async_echo.py
 │       │   ├── base.py
-│       │   └── echo.py
+│       │   ├── echo.py
+│       │   └── llm.py
 │       ├── config/
 │       │   └── settings.py
 │       ├── core/
@@ -114,7 +116,10 @@ Contains stable data contracts and the exception hierarchy. It has no provider, 
 
 ### `agents`
 
-Defines parallel `Agent` and `AsyncAgent` abstractions. An Agent owns task-specific behavior and returns one `Message`. Echo implementations are deterministic examples, not AI integrations.
+Defines parallel `Agent` and `AsyncAgent` abstractions. An Agent owns task-specific behavior and
+returns one `Message`. Echo implementations are deterministic examples. `LLMAgent` is a synchronous
+reference composition that turns the current Task and Context into one provider request; it does not
+implement planning or Tool orchestration.
 
 ### `events`
 
@@ -154,7 +159,11 @@ Built-in components use the same lazy `Plugin` descriptor as third-party package
 
 Defines the synchronous boundary between Agents and model vendor SDKs. `ModelRequest` carries messages, an optional model name, provider parameters, and application metadata. `ModelResponse` returns a framework `Message`, the resolved model, optional token usage, and provider metadata.
 
-Provider adapters own SDK-specific serialization, authentication, and exception conversion. The core contract does not implement retries, streaming, tool loops, or model selection policy. `EchoModelProvider` is a deterministic adapter for examples and tests, not a model integration.
+Provider adapters own SDK-specific serialization, authentication, and exception conversion. The
+core contract does not implement retries, streaming, tool loops, or model selection policy.
+`EchoModelProvider` is a deterministic adapter for examples and tests, not a model integration. The
+reference `LLMAgent` demonstrates injection of this boundary without making the Runtime depend on a
+Provider.
 
 ### `config`
 
