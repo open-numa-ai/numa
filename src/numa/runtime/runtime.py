@@ -1,6 +1,7 @@
 """Synchronous agent runtime for task orchestration."""
 
-from typing import Any
+from collections.abc import Iterable
+from typing import Any, cast
 from uuid import uuid4
 
 from pydantic import ValidationError
@@ -18,6 +19,13 @@ from numa.core import (
 )
 from numa.events import Event, EventBus, EventType
 from numa.memory import InMemoryMemory, Memory
+from numa.runtime.middleware import (
+    AgentInvocation,
+    RuntimeInvocation,
+    RuntimeMiddleware,
+    ToolInvocation,
+    compose_middleware,
+)
 from numa.runtime.task_persistence import load_task_for_resume, persist_task
 from numa.tasks import TaskStore
 from numa.tools import Tool
@@ -34,11 +42,22 @@ class AgentRuntime:
         memory: Memory | None = None,
         event_bus: EventBus | None = None,
         task_store: TaskStore | None = None,
+        middlewares: Iterable[RuntimeMiddleware] = (),
     ) -> None:
         self.memory = memory or InMemoryMemory()
         self.event_bus = event_bus or EventBus()
         self.task_store = task_store
+        self._middlewares = tuple(middlewares)
         self._tools: dict[str, Tool] = {}
+
+    @property
+    def middlewares(self) -> tuple[RuntimeMiddleware, ...]:
+        """Return middleware in outermost-to-innermost execution order."""
+        return self._middlewares
+
+    def add_middleware(self, middleware: RuntimeMiddleware) -> None:
+        """Append middleware as the innermost wrapper for future calls."""
+        self._middlewares += (middleware,)
 
     def register_tool(self, tool: Tool) -> None:
         """Register or replace a tool by its stable name."""
@@ -70,7 +89,18 @@ class AgentRuntime:
 
             logger.info("Tool execution started", extra={"tool": name})
             try:
-                result = tool.execute(**validated_input.model_dump())
+                invocation = ToolInvocation(
+                    execution_id=execution_id,
+                    component_name=name,
+                    arguments=validated_input.model_dump(),
+                )
+
+                def execute(invocation: RuntimeInvocation) -> Any:
+                    if not isinstance(invocation, ToolInvocation):
+                        raise TypeError("Tool middleware must forward a ToolInvocation")
+                    return tool.execute(**invocation.arguments)
+
+                result = compose_middleware(self._middlewares, execute)(invocation)
             except Exception as exc:
                 logger.exception("Tool execution failed", extra={"tool": name})
                 raise ToolExecutionError(f"Tool {name!r} execution failed") from exc
@@ -119,7 +149,19 @@ class AgentRuntime:
         logger.info("Agent task started", extra={"agent": agent.name, "task_id": task.id})
 
         try:
-            result = agent.run(task, execution_context)
+            invocation = AgentInvocation(
+                execution_id=task.id,
+                component_name=agent.name,
+                task=task,
+                context=execution_context,
+            )
+
+            def execute(invocation: RuntimeInvocation) -> Message:
+                if not isinstance(invocation, AgentInvocation):
+                    raise TypeError("Agent middleware must forward an AgentInvocation")
+                return agent.run(invocation.task, invocation.context)
+
+            result = cast(Message, compose_middleware(self._middlewares, execute)(invocation))
         except Exception as exc:
             task.status = TaskStatus.FAILED
             task.error = str(exc)

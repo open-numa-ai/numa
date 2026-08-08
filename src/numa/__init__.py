@@ -12,17 +12,34 @@ from numa.events import (
 )
 from numa.memory import Memory
 from numa.providers import ModelProvider, ModelRequest, ModelResponse, ModelUsage
-from numa.runtime import AgentRuntime, AsyncAgentRuntime, ResiliencePolicy, RetryPolicy
+from numa.runtime import (
+    AgentInvocation,
+    AgentRuntime,
+    AsyncAgentRuntime,
+    AsyncRuntimeMiddleware,
+    AsyncRuntimeNext,
+    ResiliencePolicy,
+    RetryPolicy,
+    RuntimeInvocation,
+    RuntimeMiddleware,
+    RuntimeNext,
+    ToolInvocation,
+    compose_async_middleware,
+    compose_middleware,
+)
 from numa.tasks import InMemoryTaskStore, SQLiteTaskStore, TaskRecord, TaskStore
 from numa.tools import AsyncAddTool, AsyncTool, Tool
 
 __all__ = [
     "Agent",
+    "AgentInvocation",
     "AgentRuntime",
     "AsyncAddTool",
     "AsyncAgent",
     "AsyncAgentRuntime",
     "AsyncEchoAgent",
+    "AsyncRuntimeMiddleware",
+    "AsyncRuntimeNext",
     "AsyncTool",
     "Context",
     "Event",
@@ -41,12 +58,18 @@ __all__ = [
     "NoOpEventHandler",
     "ResiliencePolicy",
     "RetryPolicy",
+    "RuntimeInvocation",
+    "RuntimeMiddleware",
+    "RuntimeNext",
     "SQLiteTaskStore",
     "Task",
     "TaskRecord",
     "TaskStatus",
     "TaskStore",
     "Tool",
+    "ToolInvocation",
+    "compose_async_middleware",
+    "compose_middleware",
 ]
 
 __version__ = "0.1.0"
