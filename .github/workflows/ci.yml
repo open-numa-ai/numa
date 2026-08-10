@@ -41,3 +41,9 @@ jobs:
 
       - name: Test
         run: uv run pytest --cov=numa --cov-report=term-missing
+
+      - name: Build package
+        run: uv build
+
+      - name: Install built wheel smoke test
+        run: uv run --isolated --with "$(find dist -name '*.whl' -print -quit)" python -c "import numa; assert numa.__version__ == '0.1.0'"

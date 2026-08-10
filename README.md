@@ -23,6 +23,7 @@ Numa is designed to be embedded beneath application-level agent logic. Applicati
 - Provider-neutral model request and response interfaces
 - Provider-backed synchronous `LLMAgent` reference implementation
 - Structured Agent, Tool, and Provider lifecycle events
+- Provider-neutral lifecycle event to span exporter bridge
 - Synchronous `AgentRuntime` with explicit task lifecycle handling
 - Parallel `AsyncAgent`, `AsyncTool`, and `AsyncAgentRuntime` contracts
 - Explicit async timeout, cancellation, and bounded retry policies
@@ -196,6 +197,8 @@ See [Architecture](docs/architecture.md) for module responsibilities and extensi
 See [Plugins](docs/plugins.md) to publish Agent and Tool extensions as separate packages.
 See [Model Providers](docs/model-providers.md) to implement optional vendor adapters.
 See [Structured Events](docs/events.md) to integrate observability handlers.
+See [Observability bridge](docs/observability.md) to export lifecycle events
+to an application-owned tracing backend.
 See [Runtime Resilience Policies](docs/runtime-policies.md) to configure async deadlines and retries.
 See [Task Persistence and Resume](docs/task-persistence.md) for durable lifecycle recovery.
 See [Runtime Middleware](docs/runtime-middleware.md) to wrap Agent and Tool component calls.

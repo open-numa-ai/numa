@@ -42,6 +42,17 @@ Goal: compose explicit local Agent execution without embedding planning strategy
 - [x] Structured asynchronous parallel branches
 - [x] Deterministic named step results and child Task correlation
 
+## v0.5: Contract and Integration Readiness
+
+Goal: make the existing runtime contracts installable, testable, and easy to
+integrate without adding provider or deployment policy to the core package.
+
+- [x] Single-source package version and CI build artifact check
+- [x] Offline end-to-end integration path across Runtime boundaries
+- [x] Provider-neutral lifecycle event to span exporter bridge
+- [ ] External adapter validation (for example, OpenTelemetry) without a core dependency
+- [ ] Workflow-level persistence and resume semantics RFC
+
 ## Possible Future Directions
 
 These items are areas to validate through real integrations, not committed features:

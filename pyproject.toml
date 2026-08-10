@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "numa-ai"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A provider-neutral Python runtime foundation for agent applications."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -45,6 +45,9 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/numa"]
+
+[tool.hatch.version]
+path = "src/numa/__init__.py"
 
 [tool.pytest.ini_options]
 addopts = "--strict-config --strict-markers -ra"

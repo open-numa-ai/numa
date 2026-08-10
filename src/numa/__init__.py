@@ -15,9 +15,13 @@ from numa.events import (
     Event,
     EventBus,
     EventHandler,
+    EventSpanHandler,
     EventType,
     InMemoryEventHandler,
+    InMemorySpanExporter,
     NoOpEventHandler,
+    SpanExporter,
+    SpanRecord,
 )
 from numa.memory import Memory
 from numa.providers import ModelProvider, ModelRequest, ModelResponse, ModelUsage
@@ -86,8 +90,10 @@ __all__ = [
     "Event",
     "EventBus",
     "EventHandler",
+    "EventSpanHandler",
     "EventType",
     "InMemoryEventHandler",
+    "InMemorySpanExporter",
     "InMemoryTaskStore",
     "Memory",
     "Message",
@@ -104,6 +110,8 @@ __all__ = [
     "RuntimeNext",
     "SQLiteTaskStore",
     "SequentialWorkflow",
+    "SpanExporter",
+    "SpanRecord",
     "Task",
     "TaskRecord",
     "TaskStatus",
