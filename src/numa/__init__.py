@@ -5,10 +5,13 @@ from numa.core import (
     Context,
     Message,
     MessageRole,
+    SpeechRecognitionError,
+    SpeechSynthesisError,
     Task,
     TaskStatus,
     ToolPermissionDeniedError,
     ToolPermissionPolicyError,
+    VoiceInteractionError,
     WorkflowExecutionError,
 )
 from numa.events import (
@@ -49,6 +52,16 @@ from numa.runtime import (
 )
 from numa.tasks import InMemoryTaskStore, SQLiteTaskStore, TaskRecord, TaskStore
 from numa.tools import AsyncAddTool, AsyncTool, Tool
+from numa.voice import (
+    EchoSpeechRecognizer,
+    EchoSpeechSynthesizer,
+    SpeechRecognizer,
+    SpeechSynthesizer,
+    SynthesizedAudio,
+    Transcript,
+    VoiceSession,
+    VoiceTurnResult,
+)
 from numa.workflows import (
     AgentStep,
     AsyncAgentStep,
@@ -87,6 +100,8 @@ __all__ = [
     "ConditionalWorkflow",
     "Context",
     "DenyAllToolPolicy",
+    "EchoSpeechRecognizer",
+    "EchoSpeechSynthesizer",
     "Event",
     "EventBus",
     "EventHandler",
@@ -112,6 +127,11 @@ __all__ = [
     "SequentialWorkflow",
     "SpanExporter",
     "SpanRecord",
+    "SpeechRecognitionError",
+    "SpeechRecognizer",
+    "SpeechSynthesisError",
+    "SpeechSynthesizer",
+    "SynthesizedAudio",
     "Task",
     "TaskRecord",
     "TaskStatus",
@@ -125,6 +145,10 @@ __all__ = [
     "ToolPermissionPolicy",
     "ToolPermissionPolicyError",
     "ToolPermissionRequest",
+    "Transcript",
+    "VoiceInteractionError",
+    "VoiceSession",
+    "VoiceTurnResult",
     "WorkflowCondition",
     "WorkflowExecutionError",
     "WorkflowNode",

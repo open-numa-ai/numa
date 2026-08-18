@@ -53,6 +53,17 @@ integrate without adding provider or deployment policy to the core package.
 - [ ] External adapter validation (for example, OpenTelemetry) without a core dependency
 - [ ] Workflow-level persistence and resume semantics RFC
 
+## v0.6: Voice Interaction Boundary
+
+Goal: validate complete push-to-talk style voice turns without coupling the
+Runtime to speech vendors, audio devices, or streaming policy.
+
+- [x] Asynchronous speech recognition and synthesis contracts
+- [x] Turn-based voice composition above `AsyncAgentRuntime`
+- [x] Correlated, privacy-safe voice lifecycle events
+- [x] Deterministic offline Echo adapters and integration example
+- [ ] External ASR and TTS adapter validation without core SDK dependencies
+
 ## Possible Future Directions
 
 These items are areas to validate through real integrations, not committed features:
@@ -60,6 +71,7 @@ These items are areas to validate through real integrations, not committed featu
 - Multi-agent routing and collaboration
 - Distributed runtime adapters
 - Evaluation and observability integrations
+- Streaming speech, partial transcripts, interruption, and device adapters
 
 ## Guiding Priorities
 

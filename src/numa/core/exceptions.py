@@ -59,3 +59,15 @@ class TaskResumeError(NumaError):
 
 class WorkflowExecutionError(NumaError):
     """Raised when workflow composition or one of its steps cannot complete."""
+
+
+class VoiceInteractionError(NumaError):
+    """Base class for failures at a turn-based voice interaction boundary."""
+
+
+class SpeechRecognitionError(VoiceInteractionError):
+    """Raised when an audio input cannot be converted into a transcript."""
+
+
+class SpeechSynthesisError(VoiceInteractionError):
+    """Raised when an Agent response cannot be converted into audio."""

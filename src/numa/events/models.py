@@ -23,6 +23,16 @@ class EventType(StrEnum):
     PROVIDER_STARTED = "provider.started"
     PROVIDER_COMPLETED = "provider.completed"
     PROVIDER_FAILED = "provider.failed"
+    VOICE_TURN_STARTED = "voice_turn.started"
+    VOICE_TURN_COMPLETED = "voice_turn.completed"
+    VOICE_TURN_FAILED = "voice_turn.failed"
+    VOICE_TURN_CANCELLED = "voice_turn.cancelled"
+    SPEECH_RECOGNITION_STARTED = "speech_recognition.started"
+    SPEECH_RECOGNITION_COMPLETED = "speech_recognition.completed"
+    SPEECH_RECOGNITION_FAILED = "speech_recognition.failed"
+    SPEECH_SYNTHESIS_STARTED = "speech_synthesis.started"
+    SPEECH_SYNTHESIS_COMPLETED = "speech_synthesis.completed"
+    SPEECH_SYNTHESIS_FAILED = "speech_synthesis.failed"
 
 
 @dataclass(frozen=True, slots=True)
