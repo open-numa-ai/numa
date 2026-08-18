@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 from dataclasses import dataclass
+from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
 from typing import Any
 
 import pytest
-from examples.adapters.openai_speech import (
-    OpenAISpeechRecognizer,
-    OpenAISpeechSynthesizer,
-)
 
 from numa import (
     AsyncAgentRuntime,
@@ -17,6 +16,18 @@ from numa import (
     VoiceSession,
 )
 from numa.agents import AsyncEchoAgent
+
+_OPENAI_SPEECH_SPEC = spec_from_file_location(
+    "tests.examples.adapters.openai_speech",
+    Path(__file__).resolve().parents[2] / "examples" / "adapters" / "openai_speech.py",
+)
+assert _OPENAI_SPEECH_SPEC is not None
+assert _OPENAI_SPEECH_SPEC.loader is not None
+_OPENAI_SPEECH_MODULE = module_from_spec(_OPENAI_SPEECH_SPEC)
+sys.modules[_OPENAI_SPEECH_SPEC.name] = _OPENAI_SPEECH_MODULE
+_OPENAI_SPEECH_SPEC.loader.exec_module(_OPENAI_SPEECH_MODULE)
+OpenAISpeechRecognizer = _OPENAI_SPEECH_MODULE.OpenAISpeechRecognizer
+OpenAISpeechSynthesizer = _OPENAI_SPEECH_MODULE.OpenAISpeechSynthesizer
 
 
 @dataclass
