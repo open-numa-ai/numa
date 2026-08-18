@@ -51,6 +51,9 @@ asyncio.run(main())
 The Echo adapters use UTF-8 bytes instead of real audio. They are deterministic
 fixtures for examples and tests, not speech implementations.
 
+For a credentialed file-to-file integration using optional OpenAI speech
+endpoints, see [Voice Adapter Validation](voice-adapter-validation.md).
+
 ## Implement Adapters
 
 Applications implement `SpeechRecognizer` and `SpeechSynthesizer` around their

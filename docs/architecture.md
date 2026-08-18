@@ -36,20 +36,25 @@ numa/
 │   ├── runtime-policies.md
 │   ├── task-persistence.md
 │   ├── tool-permissions.md
+│   ├── voice-adapter-validation.md
 │   ├── voice-interaction.md
 │   ├── workflows.md
 │   └── vision.md
 ├── examples/
+│   ├── adapters/
+│   │   └── openai_speech.py
 │   ├── async_runtime.py
 │   ├── async_workflow_composition.py
 │   ├── basic_agent.py
 │   ├── basic_tool.py
 │   ├── llm_reference_agent.py
 │   ├── model_provider.py
+│   ├── openai_voice_interaction.py
 │   ├── runtime_resilience.py
 │   ├── structured_events.py
 │   ├── sqlite_memory.py
 │   ├── task_resume.py
+│   ├── voice_interaction.py
 │   └── workflow_composition.py
 ├── src/
 │   └── numa/
@@ -202,6 +207,10 @@ ownership of audio capture and playback, vendor SDK integration, credentials,
 media conversion, and product interaction policy. Streaming audio, partial
 transcripts, interruption, wake words, and device management are not Runtime
 responsibilities.
+
+The credentialed OpenAI adapter reference remains under `examples/adapters`
+instead of the installed `numa` package. It validates the public speech
+contracts while keeping provider SDKs and provider selection outside core.
 
 ### `utils`
 
