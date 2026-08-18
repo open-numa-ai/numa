@@ -13,9 +13,15 @@ Every `Event` contains:
 - A UTC timestamp
 - Structured metadata
 
-Built-in event types cover Agent, Tool, and Provider started, completed, and failed transitions. Async Agent and Tool execution also emit explicit cancelled transitions.
+Built-in event types cover Agent, Tool, Provider, speech recognition, speech
+synthesis, and complete voice-turn lifecycle transitions. Async Agent, Tool,
+and voice-turn execution also emit explicit cancelled transitions.
 
 Numa does not include task descriptions, prompts, model parameters, tool arguments, or results in built-in events. Custom handlers remain responsible for protecting any metadata they add.
+
+Voice events use the Runtime Task ID as their execution ID, allowing one turn
+to correlate recognition, Agent, and synthesis events. Their metadata contains
+opaque session and turn IDs but never audio bytes, transcripts, or responses.
 
 ## Collect Events
 

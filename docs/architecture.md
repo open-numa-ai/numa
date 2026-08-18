@@ -36,6 +36,7 @@ numa/
 │   ├── runtime-policies.md
 │   ├── task-persistence.md
 │   ├── tool-permissions.md
+│   ├── voice-interaction.md
 │   ├── workflows.md
 │   └── vision.md
 ├── examples/
@@ -96,6 +97,11 @@ numa/
 │       │   └── base.py
 │       ├── utils/
 │       │   └── logging.py
+│       ├── voice/
+│       │   ├── base.py
+│       │   ├── echo.py
+│       │   ├── models.py
+│       │   └── session.py
 │       ├── workflows/
 │       │   ├── async_workflow.py
 │       │   ├── base.py
@@ -183,6 +189,20 @@ Composes named Agent steps above `AgentRuntime` and `AsyncAgentRuntime`. Sequenc
 
 The root workflow Task records aggregate completion, failure, or cancellation but is not persisted by a Runtime. Parallel branch metadata mutations remain isolated; branch messages and named results are the defined merge outputs. Workflow nodes do not infer tasks, retry completed steps, compensate side effects, or route between remote workers.
 
+### `voice`
+
+Defines asynchronous speech recognition and synthesis contracts plus a
+turn-based `VoiceSession` composition above `AsyncAgentRuntime`. Each complete
+audio input becomes one Runtime-managed Task, and the same execution ID
+correlates recognition, Agent, synthesis, and voice-turn events. Deterministic
+Echo adapters support offline tests without processing real audio.
+
+Voice sessions serialize turns over a shared Context. Applications retain
+ownership of audio capture and playback, vendor SDK integration, credentials,
+media conversion, and product interaction policy. Streaming audio, partial
+transcripts, interruption, wake words, and device management are not Runtime
+responsibilities.
+
 ### `utils`
 
 Contains narrow shared infrastructure. The logging helper configures only the `numa` namespace, preserving control for embedding applications.
@@ -249,8 +269,12 @@ output validation before the Runtime emits a completion event.
 - **Planning:** build explicit or dynamic planning policy on top of workflow nodes; do not embed planning policy into the base Runtime.
 - **Multi-agent collaboration:** add routing and message transport as a higher orchestration layer.
 - **Observability:** attach logging handlers or implement `EventHandler` adapters for metrics, tracing, audit, and OpenTelemetry backends.
+- **Speech integration:** implement optional `SpeechRecognizer` and `SpeechSynthesizer` adapters around application-owned local or hosted services.
 - **Plugins:** add compatibility metadata, version constraints, and optional plugin diagnostics without importing components during listing.
 
 ## Current Boundaries
 
-The foundation does not include vendor LLM adapters, prompt templates, autonomous loops, network services, distributed execution, or multi-agent coordination. Synchronous Runtime resilience, distributed Task ownership, and side-effect compensation are intentionally deferred.
+The foundation does not include vendor LLM or speech adapters, prompt templates, autonomous loops,
+audio device management, streaming speech, network services, distributed execution, or multi-agent
+coordination. Synchronous Runtime resilience, distributed Task ownership, and side-effect
+compensation are intentionally deferred.

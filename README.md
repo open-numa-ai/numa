@@ -31,6 +31,7 @@ Numa is designed to be embedded beneath application-level agent logic. Applicati
 - Ordered synchronous and asynchronous Runtime middleware composition
 - Explicit Tool allowlist, denylist, and custom permission policies
 - Sequential, conditional, and explicit asynchronous parallel workflow composition
+- Provider-neutral turn-based speech recognition and synthesis composition
 - Framework-neutral `Task`, `Message`, and `Context` models
 - YAML, JSON, environment, and default configuration layers
 - Standard-library logging with a unified Numa namespace
@@ -175,6 +176,34 @@ result = workflow.run(AgentRuntime(), Task(description="Write an update"))
 print(result.final_message.content if result.final_message else "no result")
 ```
 
+Run a complete push-to-talk style voice turn with replaceable speech adapters:
+
+```python
+import asyncio
+
+from numa import (
+    AsyncAgentRuntime,
+    EchoSpeechRecognizer,
+    EchoSpeechSynthesizer,
+    VoiceSession,
+)
+from numa.agents import AsyncEchoAgent
+
+
+async def main() -> None:
+    session = VoiceSession(
+        EchoSpeechRecognizer(),
+        EchoSpeechSynthesizer(),
+        AsyncAgentRuntime(),
+        AsyncEchoAgent(),
+    )
+    result = await session.handle_turn(b"Hello from a voice turn")
+    print(result.response.content)
+
+
+asyncio.run(main())
+```
+
 See the [Quick Start guide](docs/quick-start.md) for configuration and development commands.
 
 ## Architecture
@@ -204,6 +233,8 @@ See [Task Persistence and Resume](docs/task-persistence.md) for durable lifecycl
 See [Runtime Middleware](docs/runtime-middleware.md) to wrap Agent and Tool component calls.
 See [Tool Permission Policies](docs/tool-permissions.md) to authorize Runtime-managed Tool calls.
 See [Workflow Composition](docs/workflows.md) to compose sequential, conditional, and asynchronous parallel Agent steps.
+See [Voice Interaction](docs/voice-interaction.md) to compose complete audio turns around
+`AsyncAgentRuntime` without selecting an ASR or TTS provider.
 
 ## Development
 

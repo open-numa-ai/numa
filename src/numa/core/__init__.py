@@ -6,6 +6,8 @@ from numa.core.exceptions import (
     ConfigurationError,
     MemoryError,
     NumaError,
+    SpeechRecognitionError,
+    SpeechSynthesisError,
     TaskNotFoundError,
     TaskPersistenceError,
     TaskResumeError,
@@ -15,6 +17,7 @@ from numa.core.exceptions import (
     ToolPermissionPolicyError,
     ToolTimeoutError,
     ToolValidationError,
+    VoiceInteractionError,
     WorkflowExecutionError,
 )
 from numa.core.models import Context, Message, MessageRole, Task, TaskStatus
@@ -28,6 +31,8 @@ __all__ = [
     "Message",
     "MessageRole",
     "NumaError",
+    "SpeechRecognitionError",
+    "SpeechSynthesisError",
     "Task",
     "TaskNotFoundError",
     "TaskPersistenceError",
@@ -39,5 +44,6 @@ __all__ = [
     "ToolPermissionPolicyError",
     "ToolTimeoutError",
     "ToolValidationError",
+    "VoiceInteractionError",
     "WorkflowExecutionError",
 ]
