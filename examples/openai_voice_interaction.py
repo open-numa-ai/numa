@@ -13,7 +13,6 @@ from examples.adapters.openai_speech import (
     OpenAISpeechRecognizer,
     OpenAISpeechSynthesizer,
 )
-
 from numa import AsyncAgentRuntime, VoiceSession
 from numa.agents import AsyncEchoAgent
 
