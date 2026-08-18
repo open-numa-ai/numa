@@ -62,7 +62,8 @@ Runtime to speech vendors, audio devices, or streaming policy.
 - [x] Turn-based voice composition above `AsyncAgentRuntime`
 - [x] Correlated, privacy-safe voice lifecycle events
 - [x] Deterministic offline Echo adapters and integration example
-- [ ] External ASR and TTS adapter validation without core SDK dependencies
+- [x] Optional OpenAI ASR/TTS adapter reference with offline contract validation
+- [ ] Credentialed live endpoint smoke test on a supported Python 3.11+ environment
 
 ## Possible Future Directions
 

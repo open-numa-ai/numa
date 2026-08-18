@@ -220,7 +220,9 @@ Task + Context ---- Memory
 Task Store (optional)
 ```
 
-Numa depends on abstractions at its boundaries. Applications compose the system, Agents own task behavior, the Runtime owns execution lifecycle, Tools expose capabilities, and adapters own model and storage integration.
+Numa depends on abstractions at its boundaries. Applications compose the system, Agents own task
+behavior, the Runtime owns execution lifecycle, Tools expose capabilities, and adapters own model,
+speech, and storage integration.
 
 See [Architecture](docs/architecture.md) for module responsibilities and extension points.
 See [Plugins](docs/plugins.md) to publish Agent and Tool extensions as separate packages.
@@ -235,6 +237,8 @@ See [Tool Permission Policies](docs/tool-permissions.md) to authorize Runtime-ma
 See [Workflow Composition](docs/workflows.md) to compose sequential, conditional, and asynchronous parallel Agent steps.
 See [Voice Interaction](docs/voice-interaction.md) to compose complete audio turns around
 `AsyncAgentRuntime` without selecting an ASR or TTS provider.
+See [Voice Adapter Validation](docs/voice-adapter-validation.md) for an optional,
+credentialed OpenAI transcription and speech example that does not add a core SDK dependency.
 
 ## Development
 
