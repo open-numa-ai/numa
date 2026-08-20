@@ -18,6 +18,10 @@ are not part of the lifecycle event contract and are not exported. An
 application can implement `SpanExporter` for OpenTelemetry, logs, metrics, or
 another backend without changing Runtime code.
 
+See [OpenTelemetry adapter validation](opentelemetry-validation.md) for an
+optional examples-layer adapter, offline contract tests, and an SDK in-memory
+validation command.
+
 Exporters should be non-blocking or buffered; Event handlers run synchronously
 and handler failures are isolated by `EventBus`. Sampling, batching, exporter
 configuration, and sensitive metadata redaction remain application concerns.

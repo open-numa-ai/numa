@@ -5,6 +5,8 @@ capability groups; package versions are maintained independently.
 
 ## Unreleased
 
+- Add an optional OpenTelemetry `SpanRecord` adapter, offline contract tests,
+  and an SDK in-memory validation example without a core dependency.
 - Preserve complete, role-correct `USER` and `ASSISTANT` history across voice
   turns without duplicating the current transcript in Agent input.
 - Add an optional OpenAI speech adapter reference, offline contract tests, and

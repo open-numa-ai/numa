@@ -31,6 +31,8 @@ numa/
 │   ├── design.md
 │   ├── events.md
 │   ├── model-providers.md
+│   ├── observability.md
+│   ├── opentelemetry-validation.md
 │   ├── plugins.md
 │   ├── quick-start.md
 │   ├── runtime-policies.md
@@ -42,13 +44,15 @@ numa/
 │   └── vision.md
 ├── examples/
 │   ├── adapters/
-│   │   └── openai_speech.py
+│   │   ├── openai_speech.py
+│   │   └── opentelemetry_spans.py
 │   ├── async_runtime.py
 │   ├── async_workflow_composition.py
 │   ├── basic_agent.py
 │   ├── basic_tool.py
 │   ├── llm_reference_agent.py
 │   ├── model_provider.py
+│   ├── opentelemetry_observability.py
 │   ├── openai_voice_interaction.py
 │   ├── runtime_resilience.py
 │   ├── structured_events.py
@@ -143,6 +147,10 @@ implement planning or Tool orchestration.
 ### `events`
 
 Defines structured Agent, Tool, and Provider lifecycle events, including explicit async cancellation transitions. `EventBus` dispatches synchronously to registered handlers and isolates handler failures from framework execution. Built-in producers emit correlation IDs, component names, UTC timestamps, transition types, and minimal metadata without including prompts, arguments, or results.
+
+The optional example-layer OpenTelemetry adapter maps each derived `SpanRecord` to one short
+transition span. It neither adds an OpenTelemetry dependency to the core package nor reconstructs
+long-lived parent/child spans from separate lifecycle events.
 
 ### `runtime`
 
