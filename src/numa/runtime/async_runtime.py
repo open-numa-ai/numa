@@ -200,8 +200,15 @@ class AsyncAgentRuntime:
         task: Task,
         context: Context | None = None,
         resilience_policy: ResiliencePolicy | None = None,
+        *,
+        input_message: Message | None = None,
     ) -> Message:
-        """Run one asynchronous Agent task and update its lifecycle state."""
+        """Run one asynchronous Agent task and update its lifecycle state.
+
+        ``input_message`` is committed to the Context immediately before the
+        Agent result, after execution succeeds. It is not visible to the Agent
+        during the current invocation because ``task`` represents that input.
+        """
         execution_context = context or Context()
         task.status = TaskStatus.RUNNING
         task.result = None
@@ -295,6 +302,8 @@ class AsyncAgentRuntime:
             )
             raise AgentExecutionError(f"Agent {agent.name!r} failed task {task.id}") from exc
 
+        if input_message is not None:
+            execution_context.add_message(input_message)
         execution_context.add_message(result)
         task.result = result
         task.status = TaskStatus.COMPLETED
