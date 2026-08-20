@@ -50,7 +50,7 @@ integrate without adding provider or deployment policy to the core package.
 - [x] Single-source package version and CI build artifact check
 - [x] Offline end-to-end integration path across Runtime boundaries
 - [x] Provider-neutral lifecycle event to span exporter bridge
-- [ ] External adapter validation (for example, OpenTelemetry) without a core dependency
+- [x] External OpenTelemetry adapter validation without a core dependency
 - [ ] Workflow-level persistence and resume semantics RFC
 
 ## v0.6: Voice Interaction Boundary

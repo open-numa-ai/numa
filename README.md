@@ -230,6 +230,8 @@ See [Model Providers](docs/model-providers.md) to implement optional vendor adap
 See [Structured Events](docs/events.md) to integrate observability handlers.
 See [Observability bridge](docs/observability.md) to export lifecycle events
 to an application-owned tracing backend.
+See [OpenTelemetry Adapter Validation](docs/opentelemetry-validation.md) for an
+optional SDK integration that keeps OpenTelemetry outside Numa core.
 See [Runtime Resilience Policies](docs/runtime-policies.md) to configure async deadlines and retries.
 See [Task Persistence and Resume](docs/task-persistence.md) for durable lifecycle recovery.
 See [Runtime Middleware](docs/runtime-middleware.md) to wrap Agent and Tool component calls.
