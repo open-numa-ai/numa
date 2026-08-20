@@ -89,17 +89,23 @@ root.
 
 ## Session and Runtime Semantics
 
-`VoiceSession` owns one shared `Context` and serializes calls to `handle_turn`
-so completed Agent messages stay ordered. Each turn receives a unique
-`turn_id` and a Runtime `Task`; its task ID correlates voice, speech, and Agent
-events. Reserved `voice_session_id` and `voice_turn_id` values are added to
-task metadata.
+`VoiceSession` owns one shared `Context` and serializes calls to `handle_turn`.
+The current transcript is represented by the Runtime `Task` while the Agent is
+running, so it does not appear twice in model input. After Agent execution
+succeeds, the Runtime commits the transcript as a `USER` message immediately
+before the `ASSISTANT` response and persists the complete ordered Context.
+Each turn receives a unique `turn_id` and a Runtime `Task`; its task ID
+correlates voice, speech, and Agent events. Reserved `voice_session_id` and
+`voice_turn_id` values are added to task metadata.
 
 The injected `AsyncAgentRuntime` still owns Agent lifecycle, middleware,
 resilience, task persistence, tool registration, and tool permission policy.
 Recognition failures raise `SpeechRecognitionError`, synthesis failures raise
 `SpeechSynthesisError`, and Agent failures retain the Runtime's existing error
-semantics. Cancellation remains visible to the caller.
+semantics. Recognition or Agent failure and cancellation during Agent execution
+do not commit a partial conversation turn. Once the Agent succeeds, the text
+turn remains committed even if synthesis fails or is cancelled. Cancellation
+always remains visible to the caller.
 
 ## Events and Privacy
 

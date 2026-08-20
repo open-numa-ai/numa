@@ -5,6 +5,8 @@ capability groups; package versions are maintained independently.
 
 ## Unreleased
 
+- Preserve complete, role-correct `USER` and `ASSISTANT` history across voice
+  turns without duplicating the current transcript in Agent input.
 - Add an optional OpenAI speech adapter reference, offline contract tests, and
   a credentialed WAV-to-WAV validation example without a core SDK dependency.
 - Add provider-neutral, turn-based speech recognition and synthesis contracts,

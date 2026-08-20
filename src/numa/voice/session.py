@@ -9,6 +9,8 @@ from uuid import uuid4
 from numa.agents import AsyncAgent
 from numa.core import (
     Context,
+    Message,
+    MessageRole,
     SpeechRecognitionError,
     SpeechSynthesisError,
     Task,
@@ -73,7 +75,15 @@ class VoiceSession:
                     }
                 )
                 task = Task(description=transcript.text, id=task_id, metadata=metadata)
-                response = await self.runtime.run(self.agent, task, self.context)
+                response = await self.runtime.run(
+                    self.agent,
+                    task,
+                    self.context,
+                    input_message=Message(
+                        role=MessageRole.USER,
+                        content=transcript.text,
+                    ),
+                )
                 synthesized_audio = await self._synthesize(
                     response.content,
                     task_id,

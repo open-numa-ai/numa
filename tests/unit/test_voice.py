@@ -9,6 +9,7 @@ from numa.core import (
     AgentExecutionError,
     Context,
     Message,
+    MessageRole,
     SpeechRecognitionError,
     SpeechSynthesisError,
     Task,
@@ -16,6 +17,7 @@ from numa.core import (
 )
 from numa.events import EventBus, EventType, InMemoryEventHandler
 from numa.runtime import AsyncAgentRuntime
+from numa.tasks import InMemoryTaskStore
 from numa.voice import (
     EchoSpeechRecognizer,
     EchoSpeechSynthesizer,
@@ -76,6 +78,21 @@ class EmptySynthesizer(SpeechSynthesizer):
         return SynthesizedAudio(data=b"")
 
 
+class WaitingSynthesizer(SpeechSynthesizer):
+    def __init__(self, started: asyncio.Event) -> None:
+        self.started = started
+
+    @property
+    def name(self) -> str:
+        return "waiting_synthesizer"
+
+    async def synthesize(self, text: str) -> SynthesizedAudio:
+        del text
+        self.started.set()
+        await asyncio.Event().wait()
+        raise AssertionError("unreachable")
+
+
 class FailingAgent(AsyncAgent):
     @property
     def name(self) -> str:
@@ -99,6 +116,19 @@ class WaitingAgent(AsyncAgent):
         self.started.set()
         await asyncio.Event().wait()
         raise AssertionError("unreachable")
+
+
+class HistoryAwareAgent(AsyncAgent):
+    def __init__(self) -> None:
+        self.history: list[list[tuple[MessageRole, str]]] = []
+
+    @property
+    def name(self) -> str:
+        return "history_aware"
+
+    async def run(self, task: Task, context: Context) -> Message:
+        self.history.append([(message.role, message.content) for message in context.messages])
+        return Message(role=MessageRole.ASSISTANT, content=f"answer: {task.description}")
 
 
 def event_types(collector: InMemoryEventHandler) -> list[EventType]:
@@ -133,7 +163,10 @@ def test_voice_session_runs_complete_correlated_turn() -> None:
             "voice_session_id": "session-123",
             "voice_turn_id": result.turn_id,
         }
-        assert session.context.messages == [result.response]
+        assert [(message.role, message.content) for message in session.context.messages] == [
+            (MessageRole.USER, "你好 Numa"),
+            (MessageRole.ASSISTANT, "你好 Numa"),
+        ]
         assert event_types(collector) == [
             EventType.VOICE_TURN_STARTED,
             EventType.SPEECH_RECOGNITION_STARTED,
@@ -158,18 +191,45 @@ def test_voice_session_runs_complete_correlated_turn() -> None:
 
 def test_voice_session_reuses_context_across_turns() -> None:
     async def scenario() -> None:
+        store = InMemoryTaskStore()
+        agent = HistoryAwareAgent()
         session = VoiceSession(
             EchoSpeechRecognizer(),
             EchoSpeechSynthesizer(),
-            AsyncAgentRuntime(),
-            AsyncEchoAgent(),
+            AsyncAgentRuntime(task_store=store),
+            agent,
         )
 
         first = await session.handle_turn(b"first")
         second = await session.handle_turn(b"second")
 
         assert first.turn_id != second.turn_id
-        assert [message.content for message in session.context.messages] == ["first", "second"]
+        assert agent.history == [
+            [],
+            [
+                (MessageRole.USER, "first"),
+                (MessageRole.ASSISTANT, "answer: first"),
+            ],
+        ]
+        expected_history = [
+            (MessageRole.USER, "first"),
+            (MessageRole.ASSISTANT, "answer: first"),
+            (MessageRole.USER, "second"),
+            (MessageRole.ASSISTANT, "answer: second"),
+        ]
+        assert [
+            (message.role, message.content) for message in session.context.messages
+        ] == expected_history
+        first_record = store.load(first.task.id)
+        second_record = store.load(second.task.id)
+        assert first_record is not None
+        assert second_record is not None
+        assert [
+            (message.role, message.content) for message in first_record.context.messages
+        ] == expected_history[:2]
+        assert [
+            (message.role, message.content) for message in second_record.context.messages
+        ] == expected_history
 
     asyncio.run(scenario())
 
@@ -221,6 +281,10 @@ def test_voice_session_classifies_synthesis_failures(synthesizer: SpeechSynthesi
             EventType.VOICE_TURN_FAILED,
         ]
         assert EventType.AGENT_COMPLETED in event_types(collector)
+        assert [(message.role, message.content) for message in session.context.messages] == [
+            (MessageRole.USER, "hello"),
+            (MessageRole.ASSISTANT, "hello"),
+        ]
 
     asyncio.run(scenario())
 
@@ -243,6 +307,7 @@ def test_voice_session_preserves_agent_failure() -> None:
             EventType.VOICE_TURN_FAILED,
         ]
         assert EventType.SPEECH_SYNTHESIS_STARTED not in event_types(collector)
+        assert session.context.messages == []
 
     asyncio.run(scenario())
 
@@ -267,6 +332,36 @@ def test_voice_session_propagates_cancellation() -> None:
         assert event_types(collector)[-2:] == [
             EventType.AGENT_CANCELLED,
             EventType.VOICE_TURN_CANCELLED,
+        ]
+        assert session.context.messages == []
+
+    asyncio.run(scenario())
+
+
+def test_voice_session_keeps_completed_text_turn_when_synthesis_is_cancelled() -> None:
+    async def scenario() -> None:
+        started = asyncio.Event()
+        collector = InMemoryEventHandler()
+        session = VoiceSession(
+            EchoSpeechRecognizer(),
+            WaitingSynthesizer(started),
+            AsyncAgentRuntime(event_bus=EventBus([collector])),
+            AsyncEchoAgent(),
+        )
+        execution = asyncio.create_task(session.handle_turn(b"keep this turn"))
+        await started.wait()
+
+        execution.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await execution
+
+        assert event_types(collector)[-2:] == [
+            EventType.SPEECH_SYNTHESIS_STARTED,
+            EventType.VOICE_TURN_CANCELLED,
+        ]
+        assert [(message.role, message.content) for message in session.context.messages] == [
+            (MessageRole.USER, "keep this turn"),
+            (MessageRole.ASSISTANT, "keep this turn"),
         ]
 
     asyncio.run(scenario())

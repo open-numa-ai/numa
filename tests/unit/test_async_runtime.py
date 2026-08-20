@@ -18,6 +18,7 @@ from numa.core import (
 )
 from numa.events import EventBus, EventType, InMemoryEventHandler
 from numa.runtime import AsyncAgentRuntime, ResiliencePolicy, RetryPolicy
+from numa.tasks import InMemoryTaskStore
 from numa.tools import AsyncAddTool, AsyncTool
 
 
@@ -47,6 +48,19 @@ class CoordinatedAgent(AsyncAgent):
             self._release.set()
         await self._release.wait()
         return Message(role=MessageRole.ASSISTANT, content=task.description)
+
+
+class ContextRecordingAgent(AsyncAgent):
+    def __init__(self) -> None:
+        self.messages_during_run: list[Message] = []
+
+    @property
+    def name(self) -> str:
+        return "context_recording"
+
+    async def run(self, task: Task, context: Context) -> Message:
+        self.messages_during_run = list(context.messages)
+        return Message(role=MessageRole.ASSISTANT, content=f"answer: {task.description}")
 
 
 class ResilientAgent(AsyncAgent):
@@ -116,6 +130,32 @@ def test_async_runtime_completes_task_and_updates_context() -> None:
         assert task.status is TaskStatus.COMPLETED
         assert task.result is result
         assert context.messages == [result]
+
+    asyncio.run(scenario())
+
+
+def test_async_runtime_commits_input_with_result_after_success() -> None:
+    async def scenario() -> None:
+        previous = Message(role=MessageRole.ASSISTANT, content="previous")
+        current = Message(role=MessageRole.USER, content="current")
+        context = Context(messages=[previous])
+        store = InMemoryTaskStore()
+        runtime = AsyncAgentRuntime(task_store=store)
+        agent = ContextRecordingAgent()
+        task = Task(description="current")
+
+        result = await runtime.run(
+            agent,
+            task,
+            context,
+            input_message=current,
+        )
+
+        assert agent.messages_during_run == [previous]
+        assert context.messages == [previous, current, result]
+        record = store.load(task.id)
+        assert record is not None
+        assert record.context.messages == [previous, current, result]
 
     asyncio.run(scenario())
 
