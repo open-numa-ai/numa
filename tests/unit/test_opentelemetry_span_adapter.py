@@ -200,13 +200,15 @@ def test_factory_builds_exporter_from_opentelemetry_api(monkeypatch: pytest.Monk
     tracer = RecordingTracer()
     provider = object()
     calls: list[tuple[str, object]] = []
+
+    def get_tracer(name: str, tracer_provider: object | None = None) -> RecordingTracer:
+        calls.append((name, tracer_provider))
+        return tracer
+
     fake_trace = SimpleNamespace(
         Status=lambda code: ("status", code),
         StatusCode=SimpleNamespace(ERROR="error-code"),
-        get_tracer=lambda name, tracer_provider=None: [
-            calls.append((name, tracer_provider)),
-            tracer,
-        ][-1],
+        get_tracer=get_tracer,
     )
     monkeypatch.setattr(_MODULE, "import_module", lambda name: fake_trace)
 
