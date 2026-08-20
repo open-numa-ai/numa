@@ -203,9 +203,10 @@ def test_factory_builds_exporter_from_opentelemetry_api(monkeypatch: pytest.Monk
     fake_trace = SimpleNamespace(
         Status=lambda code: ("status", code),
         StatusCode=SimpleNamespace(ERROR="error-code"),
-        get_tracer=lambda name, tracer_provider=None: (
-            calls.append((name, tracer_provider)) or tracer
-        ),
+        get_tracer=lambda name, tracer_provider=None: [
+            calls.append((name, tracer_provider)),
+            tracer,
+        ][-1],
     )
     monkeypatch.setattr(_MODULE, "import_module", lambda name: fake_trace)
 
